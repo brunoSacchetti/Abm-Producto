@@ -1,0 +1,307 @@
+{
+  "categorias_comida": [
+    {
+      "id": "1",
+      "denominacion": "Pizzas",
+      "categorias_hijas": null
+    },
+    {
+      "id": "2",
+      "denominacion": "Papas",
+      "categorias_hijas": null
+    },
+    {
+      "id": "3",
+      "denominacion": "Hamburguesas",
+      "categorias_hijas": null
+    },
+    {
+      "id": "4",
+      "denominacion": "Carnes",
+      "categorias_hijas": null
+    },
+    {
+      "id": "5",
+      "denominacion": "Ensaladas",
+      "categorias_hijas": null
+    }
+  ],
+  "categorias_insumos": [
+    {
+      "id": "1",
+      "denominacion": "Quesos",
+      "categorias_hijas": null
+    },
+    {
+      "id": "2",
+      "denominacion": "Salsas",
+      "categorias_hijas": null
+    },
+    {
+      "id": "3",
+      "denominacion": "Vegetales",
+      "categorias_hijas": null
+    },
+    {
+      "id": "4",
+      "denominacion": "Carnes",
+      "categorias_hijas": null
+    },
+    {
+      "id": "5",
+      "denominacion": "Especias",
+      "categorias_hijas": null
+    },
+    {
+      "id": "6",
+      "denominacion": "Masas",
+      "categorias_hijas": null
+    },
+    {
+      "id": "7",
+      "denominacion": "Frutas",
+      "categorias_hijas": null
+    }
+  ],
+  "unidad_medidas": [
+    {
+      "id": "1",
+      "denominacion": "gramos",
+      "abreviatura": "gr"
+    },
+    {
+      "id": "2",
+      "denominacion": "kilogramo",
+      "abreviatura": "kg"
+    },
+    {
+      "id": "3",
+      "denominacion": "taza",
+      "abreviatura": "tz"
+    },
+    {
+      "id": "4",
+      "denominacion": "pizca",
+      "abreviatura": "pz"
+    },
+    {
+      "id": "5",
+      "denominacion": "mililitros",
+      "abreviatura": "mm"
+    },
+    {
+      "id": "6",
+      "denominacion": "litros",
+      "abreviatura": "l"
+    },
+    {
+      "id": "7",
+      "abreviatura": "ud",
+      "denominacion": "unidad"
+    },
+    {
+      "id": "8",
+      "abreviatura": "cucharada",
+      "denominacion": "cucharada"
+    },
+    {
+      "id": "9",
+      "abreviatura": "rd",
+      "denominacion": "rodaja"
+    }
+  ],
+  "insumos": [
+    {
+      "id": "1",
+      "denominacion": "Mozzarella",
+      "unidadMedida": {
+        "id": 1,
+        "denominacion": "gramos",
+        "abreviatura": "gr"
+      },
+      "categoria": {
+        "id": 1,
+        "denominacion": "Quesos"
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "2",
+      "denominacion": "Tomate",
+      "unidadMedida": {
+        "id": 7,
+        "abreviatura": "ud",
+        "denominacion": "unidad"
+      },
+      "categoria": {
+        "id": 3,
+        "denominacion": "Vegetales"
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "3",
+      "denominacion": "Salsa de tomate",
+      "unidadMedida": {
+        "id": 8,
+        "abreviatura": "cucharada",
+        "denominacion": "cucharada"
+      },
+      "categoria": {
+        "id": 2,
+        "denominacion": "Salsas"
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "4",
+      "denominacion": "Carne de res",
+      "unidadMedida": {
+        "id": 1,
+        "denominacion": "gramos",
+        "abreviatura": "gr"
+      },
+      "categoria": {
+        "id": 4,
+        "denominacion": "Carnes"
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "5",
+      "denominacion": "Orégano",
+      "unidadMedida": {
+        "id": 4,
+        "denominacion": "pizca",
+        "abreviatura": "pz"
+      },
+      "categoria": {
+        "id": 5,
+        "denominacion": "Especias"
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "6",
+      "denominacion": "Masa de pizza",
+      "unidadMedida": {
+        "id": 7,
+        "abreviatura": "unidad",
+        "denominacion": "ud"
+      },
+      "categoria": {
+        "id": 6,
+        "denominacion": "Masas",
+        "categorias_hijas": null
+      },
+      "cantidad": 1000
+    },
+    {
+      "id": "7",
+      "denominacion": "Piña",
+      "unidadMedida": {
+        "id": "9",
+        "abreviatura": "rd",
+        "denominacion": "rodajas"
+      },
+      "categoria": {
+        "id": 7,
+        "denominacion": "Frutas",
+        "categorias_hijas": null
+      },
+      "cantidad": 1000
+    }
+  ],
+  "producto_manufacturado": [
+    {
+      "id": "1",
+      "categoria": {
+        "id": "1",
+        "denominacion": "Pizzas",
+        "categorias_hijas": null
+      },
+      "denominacion": "Pizza Hawaiana",
+      "alta": false,
+      "precioVenta": 10.99,
+      "tiempoEstimadoMinutos": 30,
+      "descripción": "La Pizza Hawaiana es una deliciosa combinación de sabores dulces y salados que te transportará a una isla tropical en cada bocado. Con una base de masa de pizza perfectamente horneada, se cubre con salsa de tomate, generosas porciones de mozzarella derretida, jugosas rodajas de piña fresca y trozos de jamón ahumado.",
+      "receta": "Extender la masa de pizza, agregar salsa de tomate, mozzarella, piña y jamón. Hornear hasta que esté dorada.",
+      "ingredientes": [
+        {
+          "id": 1,
+          "denominacion": "Masa de pizza",
+          "unidadMedida": {
+            "id": 7,
+            "abreviatura": "unidad",
+            "denominacion": "ud"
+          },
+          "categoria": {
+            "id": 6,
+            "denominacion": "Masas",
+            "categorias_hijas": null
+          },
+          "cantidad": 1
+        },
+        {
+          "id": 2,
+          "denominacion": "Salsa de tomate",
+          "unidadMedida": {
+            "id": 2,
+            "abreviatura": "cucharada",
+            "denominacion": "cucharada"
+          },
+          "categoria": {
+            "id": 2,
+            "denominacion": "Salsas",
+            "categorias_hijas": null
+          },
+          "cantidad": 2
+        },
+        {
+          "id": 3,
+          "denominacion": "Mozzarella",
+          "unidadMedida": {
+            "id": 3,
+            "abreviatura": "gr",
+            "denominacion": "gramo"
+          },
+          "categoria": {
+            "id": 1,
+            "denominacion": "Quesos"
+          },
+          "cantidad": 150
+        },
+        {
+          "id": 4,
+          "denominacion": "Piña",
+          "unidadMedida": {
+            "id": 7,
+            "abreviatura": "unidad",
+            "denominacion": "ud"
+          },
+          "categoria": {
+            "id": 7,
+            "denominacion": "Frutas",
+            "categorias_hijas": null
+          },
+          "cantidad": 5
+        },
+        {
+          "id": 5,
+          "denominacion": "Jamón",
+          "unidadMedida": {
+            "id": 5,
+            "abreviatura": "rebanada",
+            "denominacion": "rebanada"
+          },
+          "categoria": {
+            "id": 4,
+            "denominacion": "Carnes",
+            "categorias_hijas": null
+          },
+          "cantidad": 5
+        }
+      ]
+    }
+  ]
+}
