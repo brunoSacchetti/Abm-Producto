@@ -1,4 +1,4 @@
-/* import {
+import {
   Button,
   Checkbox,
   FormControlLabel,
@@ -18,43 +18,58 @@ import { CategoriaComidaService } from "../../../../services/CategoriaComidaServ
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 import { InsumoServices } from "../../../../services/InsumosServices";
-import { IProductoManufacturado } from "../../../../types/IProductoManufacturado";
+import IProducto from "../../../../types/IProductoManufacturado";
 import { handleSuccess } from "../../../../helpers/alerts";
+import IProductoDetalle from "../../../../types/IProductoDetalle";
 
 const API_URL = import.meta.env.VITE_API_URL;
 //valores iniciales del modal
-const initialValues: IProductoManufacturado = {
-  id: "0",
-  alta: true,
+const initialValues: IProducto = {
+  id: 0,
+  eliminado: false,
   categoria: {
-    id: "0",
+    id: 0,
+    eliminado: false,
     denominacion: "Seleccione una categoria",
-    categorias_hijas: null,
+    esInsumo: false,
+    subCategoria: null,
   },
+
   denominacion: "",
-  precioVenta: 100,
+  descripcion: "",
   tiempoEstimadoMinutos: 10,
-  descripción: "",
-  receta: "",
-  ingredientes: [],
+  precioVenta: 100,
+  preparacion: "",
+  unidadMedida: {
+    id:0,
+    eliminado:false,
+    denominacion:""
+  },
+  idsArticuloManufacturadoDetalles: [],
 };
-const initialIngredients = {
-  categoriaInsumo: "Categoria",
-  ingrediente: {
-    id: "0",
+const initialIngredients: IProductoDetalle = {
+  id: 0,
+  eliminado: false,
+  cantidad: 1,
+  insumo: {
+    id: 0,
+    eliminado: false,
     denominacion: "Ingrediente",
+    precioVenta: 100,
     unidadMedida: {
-      id: 1,
-      denominacion: "",
-      abreviatura: "",
+      id:0,
+      eliminado:false,
+      denominacion:""
     },
+    esParaElaborar: true,
     categoria: {
       id: 1,
+      eliminado: false,
       denominacion: "",
+      esInsumo: false,
+      subCategoria: null,
     },
-    cantidad: 0,
   },
-  cantidad: 1,
 };
 
 interface IMasterDetailModal {
@@ -63,7 +78,7 @@ interface IMasterDetailModal {
   handleClose: () => void;
 }
 
-export const MasterDetailModal: FC<IMasterDetailModal> = ({
+export const ArticuloManufacturadoModal: FC<IMasterDetailModal> = ({
   handleClose,
   open,
   getData,
@@ -79,33 +94,44 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
   const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target;
     const copyValues = { ...itemValue };
+
     setItemValue({
       ...copyValues,
       [`${name}`]: value,
     });
   };
 
-  
-
   //traemos categorias del apartado comida
   const [categoriaComidas, setcategoriaComidas] = useState<categorias[]>([]);
 
-  //realizamos el cambio de categoria en articuloManufacturado TODO: REVISAR Otra alternativa a mui
+  //ACA TRAEMOS TODAS LOS PRODUCTOS MANUFACTURADOS (esInsumo= FALSE)
   const handleChangeCategorieArticuloManufacturado = async (
     e: SelectChangeEvent
   ) => {
-    const denominacion = e.target.value;
-    const res = await categoriaComidaService
-      .getById(denominacion)
-      .then((data) => data);
-    if (res) {
-      setItemValue({ ...itemValue, categoria: res });
+    const idDenominacion = parseInt(e.target.value);
+
+    try {
+      const response = await fetch("http://localhost:8080/categorias");
+      const data = await response.json();
+
+      const categoriaEncontrada = data.find(
+        (categoria: categorias) => categoria.id === idDenominacion
+      );
+      //1 objeto el cual seleccionamos
+      if (categoriaEncontrada && !categoriaEncontrada.esInsumo) {
+        setItemValue({ ...itemValue, categoria: categoriaEncontrada });
+      } else {
+        console.log("La categoría no es válida o es un insumo.");
+      }
+    } catch (error) {
+      console.error("Error al obtener las categorías:", error);
     }
   };
 
   //============INGREDIENTES DEL ARTICULO MANUFACTURADO
   //contiene el estado de nuestra manera de agregar los ingredientes
-  const [valueInsumos, setvaluesInsumo] = useState<any>(initialIngredients);
+  const [valueInsumos, setvaluesInsumo] =
+    useState<IProductoDetalle>(initialIngredients);
   const resetValueInsumos = () => {
     setvaluesInsumo(initialIngredients);
   };
@@ -114,13 +140,46 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
 
   //seleccionamos una categoria del apartado insumos y se setean todos los ingredientes que vayan con ella
   const handleChangeinsumosCategories = async (e: SelectChangeEvent) => {
-    const insumos = await insumosServices.getAll().then((data) => data);
-    const denominacion = e.target.value;
-    setvaluesInsumo({ ...initialIngredients, categoriaInsumo: denominacion });
-    const result = insumos.filter(
-      (el) => el.categoria.denominacion === denominacion
-    );
-    setInsumosByCategorie(result);
+    try {
+      const response = await fetch("http://localhost:8080/categorias");
+      const data = await response.json();
+
+      // Filtrar las categorías que tienen esInsumo igual a true
+      const insumosCategorias = data.filter(
+        (categoria: categorias) => categoria.esInsumo
+      );
+
+      // Filtrar las subcategorías que tienen esInsumo igual a true
+      const subCategoriasInsumo: any[] = data.reduce(
+        (acc: categorias[], categoria: categorias) => {
+          acc.push(
+            ...categoria.subCategorias.filter(
+              (subCategoria: categorias) => subCategoria.esInsumo
+            )
+          );
+          return acc;
+        },
+        []
+      );
+
+      // Obtener las denominaciones de las categorías y subcategorías filtradas
+      const denominaciones: string[] = [
+        ...insumosCategorias,
+        ...subCategoriasInsumo,
+      ].map((item: any) => item.denominacion);
+      console.log(denominaciones);
+
+      const denominacion: string = e.target.value;
+      setvaluesInsumo({ ...initialIngredients, categoriaInsumo: denominacion });
+
+      const result = insumosCategorias.filter(
+        (el: any) => el.denominacion === denominacion
+      );
+      setInsumosByCategorie(result);
+    } catch (error) {
+      console.error("Error al obtener las categorías:", error);
+      // Manejar el error de la petición HTTP o de parseo JSON.
+    }
   };
 
   //estado que almacena ingredientes segun la categoria activa
@@ -130,37 +189,64 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
   const handleChangeInsumosValues = async (e: SelectChangeEvent) => {
     const { value } = e.target;
     const res = await insumosServices.getById(value).then((data) => data);
-    if (res) setvaluesInsumo({ ...valueInsumos, ingrediente: res });
+    if (res) setvaluesInsumo({ ...valueInsumos, insumo: res });
   };
 
   //realizamos el cambio de la cantidad del ingrediente
   const handleAmountInsumoValue = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    setvaluesInsumo({ ...valueInsumos, cantidad: value });
+    setvaluesInsumo({ ...valueInsumos, cantidad: parseInt(value) });
+    console.log(value);
   };
 
   //añadimos un nuevo ingrediente a nuestro articulo manufacturado
-  const handleNewIngredient = () => {
+  /* const handleNewIngredient = () => {
     const parse = {
       ...valueInsumos.ingrediente,
-      id: itemValue.ingredientes.length + 1,
-      cantidad: parseInt(valueInsumos.cantidad),
+      id: itemValue.idsArticuloManufacturadoDetalles.length + 1,
+      cantidad: Number(valueInsumos.cantidad),
     };
     setItemValue({
       ...itemValue,
-      ingredientes: [...itemValue.ingredientes, parse],
+      idsArticuloManufacturadoDetalles: [...itemValue.idsArticuloManufacturadoDetalles, parse],
     });
     resetValueInsumos();
     setInsumosByCategorie([]);
-  };
+  }; */
+  const handleNewIngredient = () => {
+    // Generamos un nuevo detalle de producto manufacturado
+    const newIngredientDetail: IProductoDetalle = {
+      id: itemValue.idsArticuloManufacturadoDetalles.length + 1, // Generamos un nuevo ID
+      eliminado: false, // Por defecto no está eliminado
+      cantidad: valueInsumos.cantidad, // Asignamos la cantidad
+      insumo: valueInsumos.insumo, // Asignamos el insumo seleccionado
+    };
 
+    // Creamos una copia del arreglo de detalles actual
+    const updatedDetails = [...itemValue.idsArticuloManufacturadoDetalles];
+
+    // Agregamos el ID del nuevo detalle al arreglo
+    updatedDetails.push(newIngredientDetail.id);
+
+    // Actualizamos el estado con el nuevo arreglo de detalles
+    setItemValue({
+      ...itemValue,
+      idsArticuloManufacturadoDetalles: updatedDetails,
+    });
+
+    // Reiniciamos el estado de los valores de insumos para preparar el próximo ingreso
+    resetValueInsumos();
+    // Limpiamos las categorías de insumos seleccionadas
+    setInsumosByCategorie([]);
+  };
   //eliminamos un ingrediente
   const deleteIngredient = (indice: number) => {
     setItemValue({
       ...itemValue,
-      ingredientes: itemValue.ingredientes.filter(
-        (_el, index) => index !== indice
-      ),
+      idsArticuloManufacturadoDetalles:
+        itemValue.idsArticuloManufacturadoDetalles.filter(
+          (_el, index) => index !== indice
+        ),
     });
   };
 
@@ -174,8 +260,8 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     if (data) {
       await productoManufacturadoService.put(data.id, itemValue);
     } else {
-      const parseNewId = { ...itemValue, id: `${amountItems + 1}` };
-      await productoManufacturadoService.post(parseNewId);
+      const itemsValue = { ...itemValue };
+      await productoManufacturadoService.post(itemsValue);
     }
     handleSuccess("Elemento guardado correctamente");
     handleClose();
@@ -192,22 +278,23 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
   //========SERVICIOS==================
 
   const categoriaComidaService = new CategoriaComidaService(
-    `${API_URL}/categorias_comida`
+    `${API_URL}/categorias`
   );
 
   const categoriaInsumosService = new CategoriaComidaService(
-    `${API_URL}/categorias_insumos`
+    `${API_URL}/categorias`
   );
 
   const productoManufacturadoService = new ProductoManufacturadoService(
-    `${API_URL}/producto_manufacturado`
+    `${API_URL}/ArticuloManufacturado`
   );
 
-  const insumosServices = new InsumoServices(`${API_URL}/insumos`);
+  const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
 
   //funciones para traer los elementos
   const getCategoriasInsumos = async () => {
-    await categoriaInsumosService.getAll().then((data) => {
+    await categoriaComidaService.getAll().then((data) => {
+      //mirarlo ERROR
       setInsumosCategories(data);
     });
   };
@@ -220,16 +307,20 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
 
   useEffect(() => {
     if (data) {
+      const productoData: IProducto = data as IProducto; // Realiza un cast a IProducto
       setItemValue({
-        id: data.id,
-        categoria: data.categoria,
-        denominacion: data.denominacion,
-        alta: data.alta,
-        precioVenta: data.precioVenta,
-        tiempoEstimadoMinutos: data.tiempoEstimadoMinutos,
-        descripción: data.descripción,
-        receta: data.receta,
-        ingredientes: data.ingredientes,
+        id: productoData.id,
+        categoria: productoData.categoria,
+        denominacion: productoData.denominacion,
+        alta: productoData.alta,
+        precioVenta: productoData.precioVenta,
+        tiempoEstimadoMinutos: productoData.tiempoEstimadoMinutos,
+        descripcion: productoData.descripcion,
+        preparacion: productoData.preparacion,
+        idsArticuloManufacturadoDetalles:
+          productoData.idsArticuloManufacturadoDetalles,
+        unidadMedida: productoData.unidadMedida,
+        eliminado: productoData.eliminado,
       });
     } else {
       resetValues();
@@ -263,17 +354,24 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
               <div className={styles.productContainerInputs}>
                 <Select
                   variant="filled"
-                  value={itemValue.categoria.id}
+                  value={itemValue.categoria.id.toString()}
                   onChange={handleChangeCategorieArticuloManufacturado}
                 >
                   <MenuItem selected value={"0"}>
                     Seleccione una categoria
                   </MenuItem>
-                  {categoriaComidas.map((el, index) => (
-                    <MenuItem key={index} id={`${el.id}`} value={`${el.id}`}>
-                      {el.denominacion}
-                    </MenuItem>
-                  ))}
+                  {categoriaComidas.map(
+                    (el, index) =>
+                      el.esInsumo === false && (
+                        <MenuItem
+                          key={index}
+                          id={`${el.id}`}
+                          value={`${el.id}`}
+                        >
+                          {el.denominacion}
+                        </MenuItem>
+                      )
+                  )}
                 </Select>
                 <TextField
                   label="Nombre"
@@ -311,8 +409,6 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
                   multiline
                   rows={4}
                 />
-
-                
               </div>
             </div>
             <div>
@@ -370,7 +466,7 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
                   variant="filled"
                   label="Ingrediente"
                   name="Ingrediente"
-                  value={valueInsumos.ingrediente.id}
+                  value={valueInsumos.insumo.id.toString()}
                   onChange={handleChangeInsumosValues}
                 >
                   <MenuItem selected value={"0"}>
@@ -382,11 +478,11 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
                     </MenuItem>
                   ))}
                 </Select>
-                {valueInsumos.ingrediente.denominacion !== "Ingrediente" && (
+                {valueInsumos.insumo.denominacion !== "Ingrediente" && (
                   <TextField
                     type="text"
-                    label={valueInsumos.ingrediente.unidadMedida.denominacion}
-                    value={valueInsumos.ingrediente.unidadMedida.abreviatura}
+                    label={valueInsumos.insumo.denominacion}
+                    value={valueInsumos.insumo.unidadMedida.denominacion.toString()}
                     variant="filled"
                     disabled
                   />
@@ -407,10 +503,10 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
             </div>
 
             <div className={styles.ingredientesTableContainer}>
-              {itemValue.ingredientes.length > 0 && (
+              {itemValue.idsArticuloManufacturadoDetalles.length > 0 && (
                 <div className={styles.ingredientesTableContainerItem}>
                   <TableIngredients
-                    dataIngredients={itemValue.ingredientes}
+                    dataIngredients={itemValue.idsArticuloManufacturadoDetalles}
                     handleDeleteItem={deleteIngredient}
                   />
                 </div>
@@ -441,4 +537,3 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     </div>
   );
 };
- */

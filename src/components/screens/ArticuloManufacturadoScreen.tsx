@@ -1,10 +1,11 @@
-/* import { useEffect, useState } from "react";
-import { MasterDetailModal } from "../ui/modals/MasterDetailModal/MasterDetailModal";
+import { useEffect, useState } from "react";
+/* import { MasterDetailModal } from "../ui/modals/MasterDetailModal/MasterDetailModal"; */
 import { NavBar } from "../ui/NavBar/NavBar";
 import { TableGeneric } from "../ui/tables/TableGeneric/TableGeneric";
-import { IProductoManufacturado } from "../../types/IProductoManufacturado";
+import IProductoManufacturado from "../../types/IProductoManufacturado";
 import { ProductoManufacturadoService } from "../../services/ProductoManufacturadoService";
 import { useAppDispatch } from "../../hooks/redux";
+import { ArticuloManufacturadoModal } from "../ui/modals/ArticuloManufacturadoModal/ArticuloManufacturadoModal";
 import {
   removeElementActive,
   setDataTable,
@@ -19,7 +20,7 @@ const ColumnsProductosManufacturados = [
   {
     label: "Categoria",
     key: "categoria",
-    render: (element: IProductoManufacturado) => element.categoria.denominacion,
+   /*  render: (element: IProductoManufacturado) => element.categoria.denominacion, */
   },
   {
     label: "Tiempo de cocina",
@@ -27,8 +28,8 @@ const ColumnsProductosManufacturados = [
   },
   {
     label: "Habilitado",
-    key: "alta",
-    render: (element: IProductoManufacturado) => (element.alta ? "Si" : "No"),
+    key: "eliminado",
+    render: (element: IProductoManufacturado) => (element.eliminado ? "Si" : "No"),
   },
   {
     label: "Precio",
@@ -40,7 +41,7 @@ const ColumnsProductosManufacturados = [
   },
 ];
 
-export const MasterDetail = () => {
+export const ArticuloManufacturadoScreen = () => {
   //manejo de estado del modal
   const [openModal, setOpenModal] = useState<boolean>(false);
 
@@ -57,7 +58,7 @@ export const MasterDetail = () => {
 
   //instanciamos los servicios
   const productoManufacturadoService = new ProductoManufacturadoService(
-    `${API_URL}/producto_manufacturado`
+    `${API_URL}/ArticuloManufacturado`
   );
 
   // Función para obtener los productos manufacturados
@@ -141,7 +142,7 @@ export const MasterDetail = () => {
           <CircularProgress />
         </div>
       )}
-      <MasterDetailModal
+      <ArticuloManufacturadoModal
         getData={getDataTable}
         open={openModal}
         handleClose={handleCloseModal}
@@ -149,4 +150,3 @@ export const MasterDetail = () => {
     </div>
   );
 };
- */
