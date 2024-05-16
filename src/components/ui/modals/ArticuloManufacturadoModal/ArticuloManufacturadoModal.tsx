@@ -27,14 +27,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const initialValues: IProducto = {
   id: 0,
   eliminado: false,
-  categoria: {
-    id: 0,
-    eliminado: false,
-    denominacion: "Seleccione una categoria",
-    esInsumo: false,
-    subCategoria: null,
-  },
-
   denominacion: "",
   descripcion: "",
   tiempoEstimadoMinutos: 10,
@@ -352,7 +344,7 @@ export const ArticuloManufacturadoModal: FC<IMasterDetailModal> = ({
 
             <div className={styles.productContainer}>
               <div className={styles.productContainerInputs}>
-                <Select
+                {/* <Select
                   variant="filled"
                   value={itemValue.categoria.id.toString()}
                   onChange={handleChangeCategorieArticuloManufacturado}
@@ -372,7 +364,7 @@ export const ArticuloManufacturadoModal: FC<IMasterDetailModal> = ({
                         </MenuItem>
                       )
                   )}
-                </Select>
+                </Select> */}
                 <TextField
                   label="Nombre"
                   type="text"
