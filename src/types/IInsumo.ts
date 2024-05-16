@@ -1,13 +1,11 @@
+import IArticulo from "./IArticulo";
 import { IBase } from "./IBase";
 import IUnidadMedida from "./IUnidadMedida";
 import { categorias } from "./Icategorias";
 
-export interface IInsumo extends IBase<IInsumo> {
-  denominacion: string;
-  precioVenta:number;
-  unidadMedida: IUnidadMedida;
+export interface IInsumo extends IArticulo {
   esParaElaborar: boolean;
-  categoria: categorias; 
+  //categoria: categorias; 
 
 }
 

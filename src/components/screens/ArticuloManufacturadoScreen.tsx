@@ -11,17 +11,13 @@ import {
   setDataTable,
 } from "../../redux/slices/TablaReducer";
 import { Button, CircularProgress } from "@mui/material";
+import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado";
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ColumnsProductosManufacturados = [
   { label: "Id", key: "id" },
   { label: "Nombre", key: "denominacion" },
-  {
-    label: "Categoria",
-    key: "categoria",
-   /*  render: (element: IProductoManufacturado) => element.categoria.denominacion, */
-  },
   {
     label: "Tiempo de cocina",
     key: "tiempoEstimadoMinutos",
@@ -142,7 +138,7 @@ export const ArticuloManufacturadoScreen = () => {
           <CircularProgress />
         </div>
       )}
-      <ArticuloManufacturadoModal
+      <ProductoManufacturado         
         getData={getDataTable}
         open={openModal}
         handleClose={handleCloseModal}
