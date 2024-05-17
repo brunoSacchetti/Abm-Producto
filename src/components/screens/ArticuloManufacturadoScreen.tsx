@@ -10,11 +10,25 @@ import {
   removeElementActive,
   setDataTable,
 } from "../../redux/slices/TablaReducer";
-import { Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress, styled } from "@mui/material";
 import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado";
 import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
+import AddIcon from '@mui/icons-material/Add';
+
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
+
+const StyledButton = styled(Button)({
+  backgroundColor: '#607d8b', // Gris
+  color: 'white',
+  fontFamily: 'Arial, sans-serif',
+  fontSize: '16px',
+  padding: '10px 20px',
+  textTransform: 'none',
+  '&:hover': {
+    backgroundColor: '#455a64', // Gris más oscuro
+  },
+});
 
 const ColumnsProductosManufacturados = [
   { label: "Id", key: "id" },
@@ -108,15 +122,15 @@ export const ArticuloManufacturadoScreen = () => {
             padding: ".4rem",
           }}
         >
-          <Button
+          <StyledButton
             variant="contained"
-            color="primary"
+            startIcon={<AddIcon />} // Agregar icono
             onClick={() => {
               setOpenModal(true);
             }}
           >
             Agregar un producto manufacturado
-          </Button>
+          </StyledButton>
         </div>
       </div>
 

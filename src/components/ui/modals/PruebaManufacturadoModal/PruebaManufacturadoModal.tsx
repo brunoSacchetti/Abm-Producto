@@ -111,6 +111,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     const cantidad = parseInt(e.target.value);
     setCantidadInsumo(cantidad);
   };
+  
 
   const handleNewIngredient = async () => {
     if (selectedInsumoId !== null && cantidadInsumo > 0) {
@@ -265,7 +266,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
             </div>
             <div>
               <div style={{ textAlign: "center" }}>
-                <h1>Ingresa la receta</h1>
+                <h1>Ingresa la preparacion</h1>
               </div>
               <div
                 style={{
@@ -281,14 +282,14 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   type="text"
                   value={itemValue.preparacion}
                   onChange={handlePropsElementsInputs}
-                  name="receta"
+                  name="preparacion"
                   variant="filled"
                   multiline
                   rows={4}
                 />
               </div>
               <div style={{ textAlign: "center" }}>
-                <h1>Ingredientes</h1>
+                <h1>Insumos</h1>
               </div>
               <div
                 style={{
@@ -348,7 +349,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   />
                 </div>
               ) : (
-                <div>No hay ingredientes agregados</div>
+                <div>No hay insumos agregados</div>
               )}
               <div
                 style={{

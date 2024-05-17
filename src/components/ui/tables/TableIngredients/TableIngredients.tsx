@@ -62,7 +62,7 @@ export const TableIngredients = ({
     const handleDelete = () => {
       handleDeleteItem(index);
     };
-    handleConfirm("Seguro quieres eliminar el ingrediente", handleDelete);
+    handleConfirm("¿Seguro quieres eliminar este insumo?", handleDelete);
   };
 
   return (
