@@ -136,6 +136,28 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       }
     }
   };
+  /* const handleNewIngredient = async () => {
+    if (selectedInsumoId !== null && cantidadInsumo > 0) {
+      const selectedInsumo = insumos.find(
+        (insumo) => insumo.id === selectedInsumoId
+      );
+      if (selectedInsumo) {
+        const newDetalle = {
+          id: dataIngredients.length + 1, // Aseguramos un ID único
+          cantidad: cantidadInsumo,
+          articuloInsumo: selectedInsumo,
+        };
+        try {
+          setDataIngredients([...dataIngredients, newDetalle]);
+          setSelectedInsumoId(null);
+          setCantidadInsumo(0);
+          setUnidadMedidaInsumo("N/A");
+        } catch (error) {
+          console.error("Error al agregar el nuevo ingrediente:", error);
+        }
+      }
+    }
+  }; */
 
   const deleteIngredient = (indice: number) => {
     setItemValue({
@@ -152,7 +174,12 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       if (data) {
         await productoManufacturadoService.put(data.id, itemValue);
       } else {
-        await productoManufacturadoService.post(itemValue);
+        // Crear un nuevo objeto ProductoPost con los IDs de los insumos seleccionados
+        const newProducto: ProductoPost = {
+          ...itemValue,
+          idsArticuloManufacturadoDetalles: dataIngredients.map((detalle) => detalle.articuloInsumo.id),
+        };
+        await productoManufacturadoService.post(newProducto);
       }
       handleSuccess("Elemento guardado correctamente");
       handleClose();
