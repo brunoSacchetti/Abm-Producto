@@ -111,9 +111,8 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     const cantidad = parseInt(e.target.value);
     setCantidadInsumo(cantidad);
   };
-  
 
-  const handleNewIngredient = async () => {
+  const handleNewIngredient = () => {
     if (selectedInsumoId !== null && cantidadInsumo > 0) {
       const selectedInsumo = insumos.find(
         (insumo) => insumo.id === selectedInsumoId
@@ -121,67 +120,62 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       if (selectedInsumo) {
         const newDetalle = {
           cantidad: cantidadInsumo,
-          idArticuloInsumo: selectedInsumo.id,
+          insumo: selectedInsumo,
         };
-        try {
-          const createdDetalle = await productoDetalleService.post(newDetalle);
-          console.log(...dataIngredients);
-
-          setDataIngredients([...dataIngredients, createdDetalle]);
-          setSelectedInsumoId(null);
-          setCantidadInsumo(0);
-          setUnidadMedidaInsumo("N/A");
-        } catch (error) {
-          console.error("Error al agregar el nuevo ingrediente:", error);
-        }
+        setDataIngredients([...dataIngredients, newDetalle]);
+        setSelectedInsumoId(null);
+        setCantidadInsumo(0);
+        setUnidadMedidaInsumo("N/A");
       }
     }
   };
-  /* const handleNewIngredient = async () => {
-    if (selectedInsumoId !== null && cantidadInsumo > 0) {
-      const selectedInsumo = insumos.find(
-        (insumo) => insumo.id === selectedInsumoId
-      );
-      if (selectedInsumo) {
-        const newDetalle = {
-          id: dataIngredients.length + 1, // Aseguramos un ID único
-          cantidad: cantidadInsumo,
-          articuloInsumo: selectedInsumo,
-        };
-        try {
-          setDataIngredients([...dataIngredients, newDetalle]);
-          setSelectedInsumoId(null);
-          setCantidadInsumo(0);
-          setUnidadMedidaInsumo("N/A");
-        } catch (error) {
-          console.error("Error al agregar el nuevo ingrediente:", error);
-        }
-      }
-    }
-  }; */
+
+  interface detallePost{
+    cantidad: number,
+    idArticuloInsumo: number,
+    idArticuloManufacturado: number
+  }
 
   const deleteIngredient = (indice: number) => {
-    setItemValue({
-      ...itemValue,
-      idsArticuloManufacturadoDetalles:
-        itemValue.idsArticuloManufacturadoDetalles.filter(
-          (_el, index) => index !== indice
-        ),
-    });
+    setDataIngredients(dataIngredients.filter((_el, index) => index !== indice));
   };
 
   const handleConfirmModal = async () => {
     try {
+      let productoId: number;
+      let detallesIds: number[] = []; // Array para almacenar los IDs de los detalles
+  
+      // Verificar si el producto ya existe o es nuevo
       if (data) {
-        await productoManufacturadoService.put(data.id, itemValue);
+        // Si el producto ya existe, actualizamos sus detalles
+        await productoManufacturadoService.put(itemValue.id, itemValue);
+        productoId = itemValue.id;
       } else {
-        // Crear un nuevo objeto ProductoPost con los IDs de los insumos seleccionados
-        const newProducto: ProductoPost = {
-          ...itemValue,
-          idsArticuloManufacturadoDetalles: dataIngredients.map((detalle) => detalle.articuloInsumo.id),
-        };
-        await productoManufacturadoService.post(newProducto);
+        // Si el producto es nuevo, lo creamos y obtenemos su ID
+        const newProducto = await productoManufacturadoService.post(itemValue);
+        productoId = newProducto.id;
       }
+  
+      // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
+      await Promise.all(
+        dataIngredients.map(async (detalle) => {
+          const newDetalle = {
+            id: 0,
+            cantidad: detalle.cantidad,
+            idArticuloInsumo: detalle.insumo.id, // Usar el ID del insumo
+            idArticuloManufacturado: productoId, // Asignar el ID del producto
+          };
+          const createdDetalle = await productoDetalleService.post(newDetalle);
+          detallesIds.push(createdDetalle.id); // Almacenar el ID del detalle
+        })
+      );
+  
+      // Asignar los IDs de los detalles al producto principal
+      await productoManufacturadoService.put(productoId, {
+        ...itemValue,
+        idsArticuloManufacturadoDetalles: detallesIds, // Usar los IDs de los detalles
+      });
+  
       handleSuccess("Elemento guardado correctamente");
       handleClose();
       resetValues();
@@ -191,6 +185,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       console.error("Error al confirmar modal:", error);
     }
   };
+  
+  
+  
 
   const getInsumos = async () => {
     try {
@@ -200,6 +197,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       console.error("Error al obtener insumos:", error);
     }
   };
+
   interface Ingrediente {
     denominacion: string;
     unidadMedida: {
@@ -208,6 +206,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     };
     cantidad: number;
   }
+
   return (
     <div>
       <Modal
@@ -342,7 +341,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   <TableIngredients
                     dataIngredients={dataIngredients.map((detalle, index) => ({
                       id: index + 1,
-                      ...detalle.articuloInsumo, // Aquí asumimos que detalle.articuloInsumo tiene las propiedades necesarias
+                      ...detalle.insumo,
                       cantidad: detalle.cantidad,
                     }))}
                     handleDeleteItem={deleteIngredient}
