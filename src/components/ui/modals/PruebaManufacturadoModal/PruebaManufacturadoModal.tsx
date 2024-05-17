@@ -1,3 +1,4 @@
+import React, { ChangeEvent, FC, useEffect, useState } from "react";
 import {
   Button,
   MenuItem,
@@ -6,70 +7,29 @@ import {
   SelectChangeEvent,
   TextField,
 } from "@mui/material";
-import { ChangeEvent, FC, useEffect, useState } from "react";
 import styles from "./MasterDetailModal.module.css";
-import { TableInsumo } from "../../tables/TableInsumo/TableInsumo";
+import { TableIngredients } from "../../tables/TableIngredients/TableIngredients";
 import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
-import { IInsumo } from "../../../../types/IInsumo";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
-import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 import { InsumoServices } from "../../../../services/InsumosServices";
-import IProducto from "../../../../types/IProductoManufacturado";
 import { handleSuccess } from "../../../../helpers/alerts";
 import IProductoDetalle from "../../../../types/IProductoDetalle";
+import ProductoPost from "../../../../types/typesPrueba/post/ProductoPost";
+import { IInsumo } from "../../../../types/IInsumo";
+import { ProductoDetalleService } from "../../../../services/ProductoDetalleService";
+import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 
 const API_URL = import.meta.env.VITE_API_URL;
-//valores iniciales del modal
-const initialValues: IProducto = {
+
+const initialValues: ProductoPost = {
   id: 0,
-  eliminado: false,
   denominacion: "",
   descripcion: "",
   tiempoEstimadoMinutos: 10,
   precioVenta: 100,
   preparacion: "",
-  unidadMedida: {
-    id: 0,
-    eliminado: false,
-    denominacion: "",
-  },
-  productoDetalle: [
-    {
-      id: 0,
-      eliminado: false,
-      cantidad: 0,
-      insumo: { 
-        id: 0,
-        eliminado: false,
-        denominacion: "",
-        precioVenta: 0,
-        unidadMedida: {
-          id: 0,
-          eliminado: false,
-          denominacion: "",
-        },
-        esParaElaborar: true,
-      }
-    }
-  ]
-};
-
-const initialIngredients: IProductoDetalle = {
-  id: 0,
-  eliminado: false,
-  cantidad: 0,
-  insumo: { 
-    id: 0,
-    eliminado: false,
-    denominacion: "",
-    precioVenta: 0,
-    unidadMedida: {
-      id: 0,
-      eliminado: false,
-      denominacion: "",
-    },
-    esParaElaborar: true,
-  },
+  idUnidadMedida: 4,
+  idsArticuloManufacturadoDetalles: [],
 };
 
 interface IMasterDetailModal {
@@ -78,150 +38,129 @@ interface IMasterDetailModal {
   handleClose: () => void;
 }
 
-export const ProductoManufacturado: FC<IMasterDetailModal> = ({
+export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   handleClose,
   open,
   getData,
 }) => {
-  //======= PROPIEDADES ARTICULO MANUFACTURADO =========
-  const [itemValue, setItemValue] = useState(initialValues); //state del articulo manufacturado
-
-  const resetValues = () => {
-    setItemValue(initialValues);
-  };
-
-  //maneja los cambios de los inputs del articulo manufacturado (nombre, precio, tiempo, descripcion, receta)
-  const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = e.target;
-    const copyValues = { ...itemValue };
-    setItemValue({
-      ...copyValues,
-      [`${name}`]: value,
-    });
-  };
-
-  //============INGREDIENTES DEL ARTICULO MANUFACTURADO
-  //contiene el estado de nuestra manera de agregar los ingredientes
-  const [valueInsumos, setvaluesInsumo] = useState<IProductoDetalle>(initialIngredients);
-  const resetValueInsumos = () => {
-    setvaluesInsumo(initialIngredients);
-  };
-
-  const[insumos, setInsumos] = useState<IInsumo[]>();
-
-  //realizamos el cambio del ingrediente actual
-  const handleChangeInsumosValues = async (e: SelectChangeEvent) => {
-    const { value } = e.target;
-    const res = await insumosServices.getById(value).then((data) => data);
-    if (res) setvaluesInsumo({ ...valueInsumos, insumo: res });
-  };
-
-  //realizamos el cambio de la cantidad del ingrediente
-  const handleAmountInsumoValue = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setvaluesInsumo({ ...valueInsumos, cantidad: value });
-  };
-
-  //añadimos un nuevo ingrediente a nuestro articulo manufacturado
-  const handleNewIngredient = () => {
-    const parse = {
-      ...valueInsumos.insumo,
-      id: itemValue.productoDetalle.length + 1,
-      cantidad: parseInt(valueInsumos.cantidad.toString()),
-    };
-    setItemValue({
-      ...itemValue,
-      productoDetalle: [
-        ...itemValue.productoDetalle,
-        {
-          ...initialIngredients,
-          ...parse,
-        },
-      ],
-    });
-    resetValueInsumos();
-  };
-
-  // eliminamos un ingrediente
-const deleteIngredient = (indice: number) => {
-    setItemValue({
-      ...itemValue,
-      productoDetalle: itemValue.productoDetalle.filter(
-        (_el, index) => index !== indice
-      ),
-    });
-  };
-
-  //========LOGICA DEL MODAL==================
-  //TODO: NO HACER
-  const amountItems = useAppSelector(
-    (state) => state.tablaReducer.dataTable.length
-  );
-  //si se confirma edita o agrega un nuevo elemento
-  const handleConfirmModal = async () => {
-    if (data) {
-      await productoManufacturadoService.put(data.id, itemValue);
-    } else {
-      const parseNewId = { ...itemValue, id: amountItems + 1 };
-      
-      await productoManufacturadoService.post(parseNewId);
-    }
-    handleSuccess("Elemento guardado correctamente");
-    handleClose();
-    resetValues();
-    getData(); //trae nuevamente los elementos
-    dispatch(removeElementActive()); //remueve el activo
-  };
-
-  //======== REDUX ==================
-
+  const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
+  const [selectedInsumoId, setSelectedInsumoId] = useState<number | null>(null);
+  const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
+  const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>('N/A');
+  const [dataIngredients, setDataIngredients] = useState<any[]>([]);
+  const [insumos, setInsumos] = useState<IInsumo[]>([]);
+  const productoManufacturadoService = new ProductoManufacturadoService(`${API_URL}/ArticuloManufacturado`);
+  const productoDetalleService = new ProductoDetalleService(`${API_URL}/ArticuloManufacturadoDetalle`)
+  const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
 
-
-  
-  
-
-  
-
-  //========SERVICIOS==================
-
-  const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`)
-
-  const productoManufacturadoService = new ProductoManufacturadoService(
-    `${API_URL}/ArticuloManufacturado`
-  );
-
-  //funciones para traer los elementos
-  const getInsumos = async () => {
-    await insumosServices.getAll().then((data) => {
-      setInsumos(data);
-    });
-  };
-
-  
   useEffect(() => {
     if (data) {
+      const productoData: ProductoPost = data as ProductoPost;
       setItemValue({
-        id: data.id,
-        eliminado: data.eliminado,
-        denominacion: data.denominacion,
-        descripcion: data.descripcion,
-        tiempoEstimadoMinutos: data.tiempoEstimadoMinutos,
-        precioVenta: data.precioVenta,
-        preparacion: data.preparacion,
-        unidadMedida: data.unidadMedida,
-        productoDetalle: data.productoDetalle,
+        id: productoData.id,
+        denominacion: productoData.denominacion,
+        precioVenta: productoData.precioVenta,
+        tiempoEstimadoMinutos: productoData.tiempoEstimadoMinutos,
+        descripcion: productoData.descripcion,
+        preparacion: productoData.preparacion,
+        idsArticuloManufacturadoDetalles: productoData.idsArticuloManufacturadoDetalles,
+        idUnidadMedida: productoData.idUnidadMedida,
       });
     } else {
       resetValues();
     }
   }, [data]);
 
-  // cuando entramos al componente si existe un elemento activo lo setea, si no carga los valores por defecto
   useEffect(() => {
     getInsumos();
   }, []);
+
+  const resetValues = () => {
+    setItemValue(initialValues);
+    setSelectedInsumoId(null);
+    setCantidadInsumo(0);
+    setUnidadMedidaInsumo('N/A');
+    setDataIngredients([]);
+  };
+
+  const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = e.target;
+    setItemValue({
+      ...itemValue,
+      [name]: value,
+    });
+  };
+
+  const handleChangeInsumosValues = async (e: SelectChangeEvent<number>) => {
+    const insumoId = e.target.value as number;
+    setSelectedInsumoId(insumoId);
+    const selectedInsumo = insumos.find((insumo) => insumo.id === insumoId);
+    if (selectedInsumo) {
+      setUnidadMedidaInsumo(selectedInsumo.unidadMedida.denominacion);
+    }
+  };
+
+  const handleAmountInsumoValue = (e: ChangeEvent<HTMLInputElement>) => {
+    const cantidad = parseInt(e.target.value);
+    setCantidadInsumo(cantidad);
+  };
+
+
+  const handleNewIngredient = async () => {
+    if (selectedInsumoId !== null && cantidadInsumo > 0) {
+      const selectedInsumo = insumos.find((insumo) => insumo.id === selectedInsumoId);
+      if (selectedInsumo) {
+        const newDetalle = {
+          cantidad: cantidadInsumo,
+          idArticuloInsumo: selectedInsumo.id,
+        };
+        try {
+          const createdDetalle = await productoDetalleService.post(newDetalle);
+          setDataIngredients([...dataIngredients, createdDetalle]);
+          setSelectedInsumoId(null);
+          setCantidadInsumo(0);
+          setUnidadMedidaInsumo('N/A');
+        } catch (error) {
+          console.error('Error al agregar el nuevo ingrediente:', error);
+        }
+      }
+    }
+  };
+
+  const deleteIngredient = (indice: number) => {
+    setItemValue({
+      ...itemValue,
+      idsArticuloManufacturadoDetalles: itemValue.idsArticuloManufacturadoDetalles.filter((_el, index) => index !== indice),
+    });
+  };
+
+  const handleConfirmModal = async () => {
+    try {
+      if (data) {
+        await productoManufacturadoService.put(data.id, itemValue);
+      } else {
+        await productoManufacturadoService.post(itemValue);
+      }
+      handleSuccess("Elemento guardado correctamente");
+      handleClose();
+      resetValues();
+      getData();
+      dispatch(removeElementActive());
+    } catch (error) {
+      console.error('Error al confirmar modal:', error);
+    }
+  };
+
+  const getInsumos = async () => {
+    try {
+      const data = await insumosServices.getAll();
+      setInsumos(data);
+    } catch (error) {
+      console.error('Error al obtener insumos:', error);
+    }
+  };
 
   return (
     <div>
@@ -235,11 +174,8 @@ const deleteIngredient = (indice: number) => {
         <div className={styles.modalContainer}>
           <div className={styles.modalContainerContent}>
             <div style={{ textAlign: "center" }}>
-              <h1>{`${
-                data ? "Editar" : "Crear"
-              } un producto manufacturado`}</h1>
+              <h1>{`${data ? "Editar" : "Crear"} un producto manufacturado`}</h1>
             </div>
-
             <div className={styles.productContainer}>
               <div className={styles.productContainerInputs}>
                 <TextField
@@ -278,13 +214,11 @@ const deleteIngredient = (indice: number) => {
                   multiline
                   rows={4}
                 />
-
-                
               </div>
             </div>
             <div>
               <div style={{ textAlign: "center" }}>
-                <h1>Ingresa la preparacion</h1>
+                <h1>Ingresa la receta</h1>
               </div>
               <div
                 style={{
@@ -296,18 +230,18 @@ const deleteIngredient = (indice: number) => {
               >
                 <TextField
                   style={{ width: "90%" }}
-                  label="Forma de Preparacion"
+                  label="Receta"
                   type="text"
                   value={itemValue.preparacion}
                   onChange={handlePropsElementsInputs}
-                  name="preparacion"
+                  name="receta"
                   variant="filled"
                   multiline
                   rows={4}
                 />
               </div>
               <div style={{ textAlign: "center" }}>
-                <h1>Insumos</h1>
+                <h1>Ingredientes</h1>
               </div>
               <div
                 style={{
@@ -317,39 +251,35 @@ const deleteIngredient = (indice: number) => {
                   marginBottom: "2vh",
                 }}
               >
-               
-
                 <Select
                   variant="filled"
                   label="Ingrediente"
                   name="Ingrediente"
-                  value={valueInsumos.insumo.id.toString()}
+                  value={selectedInsumoId ?? ""}
                   onChange={handleChangeInsumosValues}
                 >
-                  <MenuItem >
+                  <MenuItem value={""} disabled>
                     Insumo
                   </MenuItem>
-                  {insumos?.map((el) => (
+                  {insumos.map((el) => (
                     <MenuItem key={el.id} value={el.id}>
                       {el.denominacion}
                     </MenuItem>
                   ))}
                 </Select>
-                {valueInsumos.insumo.denominacion !== "Ingrediente" && (
-                  <TextField
-                    type="text"
-                    label={valueInsumos.insumo.unidadMedida.denominacion}
-                    value={valueInsumos.insumo.unidadMedida.denominacion}
-                    variant="filled"
-                    disabled
-                  />
-                )}
+                <TextField
+                  type="text"
+                  label={unidadMedidaInsumo}
+                  value={unidadMedidaInsumo}
+                  variant="filled"
+                  disabled
+                />
                 <TextField
                   type="number"
                   name="cantidad"
                   label="IngreseCantidad"
                   onChange={handleAmountInsumoValue}
-                  value={valueInsumos.cantidad}
+                  value={cantidadInsumo}
                   variant="filled"
                   defaultValue={10}
                 />
@@ -358,17 +288,17 @@ const deleteIngredient = (indice: number) => {
                 </Button>
               </div>
             </div>
-
             <div className={styles.ingredientesTableContainer}>
-              {itemValue.productoDetalle.length > 0 && (
+              {dataIngredients.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
-                  <TableInsumo
-                    dataIngredients={itemValue.productoDetalle}
+                  <TableIngredients
+                    dataIngredients={dataIngredients}
                     handleDeleteItem={deleteIngredient}
                   />
                 </div>
+              ) : (
+                <div>No hay ingredientes agregados</div>
               )}
-
               <div
                 style={{
                   display: "flex",

@@ -9,7 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import { useEffect, useState } from "react";
 import { ButtonsTable } from "../../buttons/ButtonsTable/ButtonsTable";
 import { useAppSelector } from "../../../../hooks/redux";
-import { IProductoManufacturado } from "../../../../types/IProductoManufacturado";
+import IProductoManufacturado from "../../../../types/IProductoManufacturado";
 
 // Definimos la interfaz para cada columna de la tabla
 interface ITableColumn<T> {

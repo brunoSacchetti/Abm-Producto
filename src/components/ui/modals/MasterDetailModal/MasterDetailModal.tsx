@@ -1,4 +1,4 @@
-/* import {
+import {
   Button,
   Checkbox,
   FormControlLabel,
@@ -88,10 +88,10 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
   
 
   //traemos categorias del apartado comida
-  const [categoriaComidas, setcategoriaComidas] = useState<categorias[]>([]);
+  /* const [categoriaComidas, setcategoriaComidas] = useState<categorias[]>([]); */
 
   //realizamos el cambio de categoria en articuloManufacturado TODO: REVISAR Otra alternativa a mui
-  const handleChangeCategorieArticuloManufacturado = async (
+  /* const handleChangeCategorieArticuloManufacturado = async (
     e: SelectChangeEvent
   ) => {
     const denominacion = e.target.value;
@@ -101,7 +101,7 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     if (res) {
       setItemValue({ ...itemValue, categoria: res });
     }
-  };
+  }; */
 
   //============INGREDIENTES DEL ARTICULO MANUFACTURADO
   //contiene el estado de nuestra manera de agregar los ingredientes
@@ -110,10 +110,10 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     setvaluesInsumo(initialIngredients);
   };
   //trae las categorias del apartado insumos
-  const [insumosCategories, setInsumosCategories] = useState<categorias[]>([]);
+  //const [insumosCategories, setInsumosCategories] = useState<categorias[]>([]);
 
   //seleccionamos una categoria del apartado insumos y se setean todos los ingredientes que vayan con ella
-  const handleChangeinsumosCategories = async (e: SelectChangeEvent) => {
+  /* const handleChangeinsumosCategories = async (e: SelectChangeEvent) => {
     const insumos = await insumosServices.getAll().then((data) => data);
     const denominacion = e.target.value;
     setvaluesInsumo({ ...initialIngredients, categoriaInsumo: denominacion });
@@ -122,7 +122,7 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     );
     setInsumosByCategorie(result);
   };
-
+ */
   //estado que almacena ingredientes segun la categoria activa
   const [insumosByCategorie, setInsumosByCategorie] = useState<IInsumo[]>([]);
 
@@ -441,4 +441,3 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
     </div>
   );
 };
- */

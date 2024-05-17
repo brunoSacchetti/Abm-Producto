@@ -5,13 +5,14 @@ import { TableGeneric } from "../ui/tables/TableGeneric/TableGeneric";
 import IProductoManufacturado from "../../types/IProductoManufacturado";
 import { ProductoManufacturadoService } from "../../services/ProductoManufacturadoService";
 import { useAppDispatch } from "../../hooks/redux";
-import { ArticuloManufacturadoModal } from "../ui/modals/ArticuloManufacturadoModal/ArticuloManufacturadoModal";
+
 import {
   removeElementActive,
   setDataTable,
 } from "../../redux/slices/TablaReducer";
 import { Button, CircularProgress } from "@mui/material";
 import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado";
+import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -88,6 +89,7 @@ export const ArticuloManufacturadoScreen = () => {
     getDataTable();
   };
 
+
   return (
     <div>
       <NavBar />
@@ -138,7 +140,7 @@ export const ArticuloManufacturadoScreen = () => {
           <CircularProgress />
         </div>
       )}
-      <ProductoManufacturado         
+      <PruebaManufacturadoModal         
         getData={getDataTable}
         open={openModal}
         handleClose={handleCloseModal}

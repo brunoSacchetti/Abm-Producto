@@ -7,7 +7,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Button } from "@mui/material";
 import { useEffect, useState } from "react";
-import { IInsumo } from "../../../../types/IInsumo";
+
 import { handleConfirm } from "../../../../helpers/alerts";
 import IProductoDetalle from "../../../../types/IProductoDetalle";
 

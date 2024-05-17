@@ -18,18 +18,18 @@ const columns = [
   {
     label: "Ingrediente",
     key: "ingrediente",
-    render: (element: IInsumo) => element.denominacion,
+    render: (element: IInsumo) => element?.denominacion ?? "N/A",
   },
   {
     label: "Unidad de medida",
     key: "unidadMedida",
-    render: (element: IInsumo) => element.unidadMedida.denominacion,
+    render: (element: IInsumo) => element?.unidadMedida?.denominacion ?? "N/A",
   },
   {
     label: "Cantidad",
     key: "cantidad",
     render: (element: IInsumo) =>
-      `${element.cantidad} ${element.unidadMedida.abreviatura}`,
+      `${element?.cantidad ?? "N/A"} ${element?.unidadMedida?.abreviatura ?? "N/A"}`,
   },
   {
     label: "Acciones",
