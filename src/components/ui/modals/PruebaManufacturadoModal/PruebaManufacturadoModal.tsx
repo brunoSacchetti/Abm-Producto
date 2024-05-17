@@ -46,11 +46,15 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
   const [selectedInsumoId, setSelectedInsumoId] = useState<number | null>(null);
   const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
-  const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>('N/A');
+  const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [insumos, setInsumos] = useState<IInsumo[]>([]);
-  const productoManufacturadoService = new ProductoManufacturadoService(`${API_URL}/ArticuloManufacturado`);
-  const productoDetalleService = new ProductoDetalleService(`${API_URL}/ArticuloManufacturadoDetalle`)
+  const productoManufacturadoService = new ProductoManufacturadoService(
+    `${API_URL}/ArticuloManufacturado`
+  );
+  const productoDetalleService = new ProductoDetalleService(
+    `${API_URL}/ArticuloManufacturadoDetalle`
+  );
   const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
@@ -65,7 +69,8 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         tiempoEstimadoMinutos: productoData.tiempoEstimadoMinutos,
         descripcion: productoData.descripcion,
         preparacion: productoData.preparacion,
-        idsArticuloManufacturadoDetalles: productoData.idsArticuloManufacturadoDetalles,
+        idsArticuloManufacturadoDetalles:
+          productoData.idsArticuloManufacturadoDetalles,
         idUnidadMedida: productoData.idUnidadMedida,
       });
     } else {
@@ -81,7 +86,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     setItemValue(initialValues);
     setSelectedInsumoId(null);
     setCantidadInsumo(0);
-    setUnidadMedidaInsumo('N/A');
+    setUnidadMedidaInsumo("N/A");
     setDataIngredients([]);
   };
 
@@ -107,10 +112,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     setCantidadInsumo(cantidad);
   };
 
-
   const handleNewIngredient = async () => {
     if (selectedInsumoId !== null && cantidadInsumo > 0) {
-      const selectedInsumo = insumos.find((insumo) => insumo.id === selectedInsumoId);
+      const selectedInsumo = insumos.find(
+        (insumo) => insumo.id === selectedInsumoId
+      );
       if (selectedInsumo) {
         const newDetalle = {
           cantidad: cantidadInsumo,
@@ -118,12 +124,14 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         };
         try {
           const createdDetalle = await productoDetalleService.post(newDetalle);
+          console.log(...dataIngredients);
+
           setDataIngredients([...dataIngredients, createdDetalle]);
           setSelectedInsumoId(null);
           setCantidadInsumo(0);
-          setUnidadMedidaInsumo('N/A');
+          setUnidadMedidaInsumo("N/A");
         } catch (error) {
-          console.error('Error al agregar el nuevo ingrediente:', error);
+          console.error("Error al agregar el nuevo ingrediente:", error);
         }
       }
     }
@@ -132,7 +140,10 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   const deleteIngredient = (indice: number) => {
     setItemValue({
       ...itemValue,
-      idsArticuloManufacturadoDetalles: itemValue.idsArticuloManufacturadoDetalles.filter((_el, index) => index !== indice),
+      idsArticuloManufacturadoDetalles:
+        itemValue.idsArticuloManufacturadoDetalles.filter(
+          (_el, index) => index !== indice
+        ),
     });
   };
 
@@ -149,7 +160,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       getData();
       dispatch(removeElementActive());
     } catch (error) {
-      console.error('Error al confirmar modal:', error);
+      console.error("Error al confirmar modal:", error);
     }
   };
 
@@ -158,10 +169,17 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       const data = await insumosServices.getAll();
       setInsumos(data);
     } catch (error) {
-      console.error('Error al obtener insumos:', error);
+      console.error("Error al obtener insumos:", error);
     }
   };
-
+  interface Ingrediente {
+    denominacion: string;
+    unidadMedida: {
+      denominacion: string;
+      abreviatura: string;
+    };
+    cantidad: number;
+  }
   return (
     <div>
       <Modal
@@ -174,7 +192,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         <div className={styles.modalContainer}>
           <div className={styles.modalContainerContent}>
             <div style={{ textAlign: "center" }}>
-              <h1>{`${data ? "Editar" : "Crear"} un producto manufacturado`}</h1>
+              <h1>{`${
+                data ? "Editar" : "Crear"
+              } un producto manufacturado`}</h1>
             </div>
             <div className={styles.productContainer}>
               <div className={styles.productContainerInputs}>
@@ -292,7 +312,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
               {dataIngredients.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
                   <TableIngredients
-                    dataIngredients={dataIngredients}
+                    dataIngredients={dataIngredients.map((detalle, index) => ({
+                      id: index + 1,
+                      ...detalle.articuloInsumo, // Aquí asumimos que detalle.articuloInsumo tiene las propiedades necesarias
+                      cantidad: detalle.cantidad,
+                    }))}
                     handleDeleteItem={deleteIngredient}
                   />
                 </div>

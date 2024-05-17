@@ -29,13 +29,14 @@ const columns = [
     label: "Cantidad",
     key: "cantidad",
     render: (element: IInsumo) =>
-      `${element?.cantidad ?? "N/A"} ${element?.unidadMedida?.abreviatura ?? "N/A"}`,
+      `${element?.cantidad ?? "N/A"} ${element?.unidadMedida?.denominacion ?? "N/A"}`,
   },
   {
     label: "Acciones",
     key: "actions",
   },
 ];
+
 export interface ITableIngredients {
   handleDeleteItem: (indice: number) => void;
   dataIngredients: IInsumo[];
@@ -49,7 +50,12 @@ export const TableIngredients = ({
   const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
-    setRows(dataIngredients);
+    // Asignar IDs automáticamente basados en el índice
+    const updatedRows = dataIngredients.map((ingredient, index) => ({
+      ...ingredient,
+      id: index + 1,
+    }));
+    setRows(updatedRows);
   }, [dataIngredients]);
 
   const handleDelete = (index: number) => {
@@ -58,6 +64,7 @@ export const TableIngredients = ({
     };
     handleConfirm("Seguro quieres eliminar el ingrediente", handleDelete);
   };
+
   return (
     <TableContainer component={Paper} sx={{ maxHeight: "25vh" }}>
       <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
