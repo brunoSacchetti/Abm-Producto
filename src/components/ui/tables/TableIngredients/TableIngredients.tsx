@@ -5,7 +5,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Button } from "@mui/material";
+import { Button, Checkbox } from "@mui/material";
 import { useEffect, useState } from "react";
 import { IInsumo } from "../../../../types/IInsumo";
 import { handleConfirm } from "../../../../helpers/alerts";
@@ -35,6 +35,9 @@ const columns = [
     label: "Acciones",
     key: "actions",
   },
+  {label:"Seleccionar",
+    key:"seleccionar"
+  }
 ];
 
 export interface ITableIngredients {
@@ -67,44 +70,49 @@ export const TableIngredients = ({
 
   return (
     <TableContainer component={Paper} sx={{ maxHeight: "25vh" }}>
-      <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            {columns.map((column, i: number) => (
-              <TableCell key={i} align={"center"}>
-                {column.label}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row, index) => (
-            <TableRow role="checkbox" tabIndex={-1} key={index}>
-              {/* Celdas de la fila */}
-              {columns.map((column, i: number) => {
-                return (
-                  <TableCell key={i} align={"center"}>
-                    {
-                      column.render ? ( // Si existe la función "render" se ejecuta
-                        column.render(row)
-                      ) : column.key === "actions" ? ( // Si el label de la columna es "Acciones" se renderizan los botones de acción
-                        <Button
-                          variant="text"
-                          onClick={() => handleDelete(index)}
-                        >
-                          Eliminar
-                        </Button>
-                      ) : (
-                        row[column.key]
-                      ) // Si no hay una función personalizada, se renderiza el contenido de la celda tal cual
-                    }
-                  </TableCell>
-                );
-              })}
-            </TableRow>
+  <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
+    <TableHead>
+      <TableRow>
+        {columns.map((column, i: number) => (
+          <TableCell key={i} align="center">
+            {column.label}
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {rows.map((row, index) => (
+        <TableRow role="checkbox" tabIndex={-1} key={index}>
+          {/* Celdas de la fila */}
+          {columns.map((column, i: number) => (
+            <TableCell key={i} align="center">
+              {column.key === "seleccionar" ? ( // Verificar si la columna es la de "Seleccionar"
+                <Checkbox
+                  checked={row.selected} // Utiliza un estado "selected" en tu objeto de fila (row) para controlar el estado del checkbox
+                  onChange={(event) => {
+                    const updatedRows = [...rows];
+                    updatedRows[index].selected = event.target.checked; // Actualiza el estado "selected" en la fila correspondiente
+                    setRows(updatedRows); // Actualiza el estado de las filas
+                  }}
+                />
+              ) : column.render ? (
+                column.render(row)
+              ) : column.key === "actions" ? (
+                <Button
+                  variant="text"
+                  onClick={() => handleDelete(index)}
+                >
+                  Eliminar
+                </Button>
+              ) : (
+                row[column.key]
+              )}
+            </TableCell>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
   );
 };

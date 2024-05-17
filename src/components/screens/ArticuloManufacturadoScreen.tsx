@@ -11,7 +11,7 @@ import {
   setDataTable,
 } from "../../redux/slices/TablaReducer";
 import { Button, CircularProgress, styled } from "@mui/material";
-import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado";
+/* import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado"; */
 import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
 import AddIcon from '@mui/icons-material/Add';
 

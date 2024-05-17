@@ -130,21 +130,19 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
-  interface detallePost{
-    cantidad: number,
-    idArticuloInsumo: number,
-    idArticuloManufacturado: number
-  }
+
 
   const deleteIngredient = (indice: number) => {
-    setDataIngredients(dataIngredients.filter((_el, index) => index !== indice));
+    setDataIngredients(
+      dataIngredients.filter((_el, index) => index !== indice)
+    );
   };
 
   const handleConfirmModal = async () => {
     try {
       let productoId: number;
       let detallesIds: number[] = []; // Array para almacenar los IDs de los detalles
-  
+
       // Verificar si el producto ya existe o es nuevo
       if (data) {
         // Si el producto ya existe, actualizamos sus detalles
@@ -155,7 +153,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
-  
+
       // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
       await Promise.all(
         dataIngredients.map(async (detalle) => {
@@ -169,43 +167,39 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
           detallesIds.push(createdDetalle.id); // Almacenar el ID del detalle
         })
       );
-  
+
       // Asignar los IDs de los detalles al producto principal
       await productoManufacturadoService.put(productoId, {
         ...itemValue,
         idsArticuloManufacturadoDetalles: detallesIds, // Usar los IDs de los detalles
       });
-  
+
       handleSuccess("Elemento guardado correctamente");
       handleClose();
       resetValues();
       getData();
       dispatch(removeElementActive());
+      getInsumos();
     } catch (error) {
       console.error("Error al confirmar modal:", error);
     }
   };
-  
-  
-  
 
   const getInsumos = async () => {
     try {
       const data = await insumosServices.getAll();
-      setInsumos(data);
+      setDataIngredients(
+        data.map((insumo) => ({
+          cantidad: 0,
+          insumo: insumo,
+        }))
+      );
     } catch (error) {
       console.error("Error al obtener insumos:", error);
     }
   };
 
-  interface Ingrediente {
-    denominacion: string;
-    unidadMedida: {
-      denominacion: string;
-      abreviatura: string;
-    };
-    cantidad: number;
-  }
+  
 
   return (
     <div>
