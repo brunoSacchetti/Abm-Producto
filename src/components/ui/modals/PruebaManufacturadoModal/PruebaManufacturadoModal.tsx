@@ -130,8 +130,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
-
-
   const deleteIngredient = (indice: number) => {
     setDataIngredients(
       dataIngredients.filter((_el, index) => index !== indice)
@@ -199,7 +197,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
-  
+  const handleTableIngredientSelect = (selectedData: any) => {
+    console.log("Datos seleccionados en TableIngredients:", selectedData);
+  };
 
   return (
     <div>
@@ -339,6 +339,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                       cantidad: detalle.cantidad,
                     }))}
                     handleDeleteItem={deleteIngredient}
+                    onSelect={handleTableIngredientSelect} // Pasa la función de devolución de llamada
                   />
                 </div>
               ) : (

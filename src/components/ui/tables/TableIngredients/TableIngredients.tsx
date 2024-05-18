@@ -6,7 +6,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Button, Checkbox } from "@mui/material";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { IInsumo } from "../../../../types/IInsumo";
 import { handleConfirm } from "../../../../helpers/alerts";
 
@@ -40,18 +40,23 @@ const columns = [
   }
 ];
 
-export interface ITableIngredients {
+interface ITableIngredients {
   handleDeleteItem: (indice: number) => void;
   dataIngredients: IInsumo[];
+  onSelect: (selectedData: any) => void; // Agrega el tipo y la prop para la función de devolución de llamada
 }
 
 export const TableIngredients = ({
   handleDeleteItem,
   dataIngredients,
+  onSelect, // Asegúrate de recibir la prop de la función de devolución de llamada
 }: ITableIngredients) => {
   // Estado para almacenar las filas de la tabla
   const [rows, setRows] = useState<any[]>([]);
-
+  const handleSelect = (selectedData: any) => {
+    // Llama a la función de devolución de llamada con los datos seleccionados
+    onSelect(selectedData);
+  };
   useEffect(() => {
     // Asignar IDs automáticamente basados en el índice
     const updatedRows = dataIngredients.map((ingredient, index) => ({
@@ -68,51 +73,56 @@ export const TableIngredients = ({
     handleConfirm("¿Seguro quieres eliminar este insumo?", handleDelete);
   };
 
+
+  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
+    const updatedRows = rows.map((row) => {
+      if (row === rowData) {
+        // Si es la fila seleccionada, actualiza su propiedad selected
+        return { ...row, selected: event.target.checked };
+      }
+      return row;
+    });
+    setRows(updatedRows);
+    onSelect(rowData); // Llama a la función de devolución de llamada con los datos de la fila seleccionada
+  };
+
   return (
     <TableContainer component={Paper} sx={{ maxHeight: "25vh" }}>
-  <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
-    <TableHead>
-      <TableRow>
-        {columns.map((column, i: number) => (
-          <TableCell key={i} align="center">
-            {column.label}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {rows.map((row, index) => (
-        <TableRow role="checkbox" tabIndex={-1} key={index}>
-          {/* Celdas de la fila */}
-          {columns.map((column, i: number) => (
-            <TableCell key={i} align="center">
-              {column.key === "seleccionar" ? ( // Verificar si la columna es la de "Seleccionar"
-                <Checkbox
-                  checked={row.selected} // Utiliza un estado "selected" en tu objeto de fila (row) para controlar el estado del checkbox
-                  onChange={(event) => {
-                    const updatedRows = [...rows];
-                    updatedRows[index].selected = event.target.checked; // Actualiza el estado "selected" en la fila correspondiente
-                    setRows(updatedRows); // Actualiza el estado de las filas
-                  }}
-                />
-              ) : column.render ? (
-                column.render(row)
-              ) : column.key === "actions" ? (
-                <Button
-                  variant="text"
-                  onClick={() => handleDelete(index)}
-                >
-                  Eliminar
-                </Button>
-              ) : (
-                row[column.key]
-              )}
-            </TableCell>
+      <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            {columns.map((column, i: number) => (
+              <TableCell key={i} align="center">
+                {column.label}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map((row, index) => (
+            <TableRow role="checkbox" tabIndex={-1} key={index}>
+              {columns.map((column, i: number) => (
+                <TableCell key={i} align="center">
+                  {column.key === "seleccionar" ? (
+                    <Checkbox
+                      checked={row.selected}
+                      onChange={(event) => handleCheckboxChange(event, row)} // Pasa los datos de la fila al cambiar el estado del Checkbox
+                    />
+                  ) : column.render ? (
+                    column.render(row)
+                  ) : column.key === "actions" ? (
+                    <Button variant="text" onClick={() => handleDelete(index)}>
+                      Eliminar
+                    </Button>
+                  ) : (
+                    row[column.key]
+                  )}
+                </TableCell>
+              ))}
+            </TableRow>
           ))}
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
