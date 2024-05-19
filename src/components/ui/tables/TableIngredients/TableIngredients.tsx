@@ -5,7 +5,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Button, Checkbox } from "@mui/material";
+import { Button, Checkbox, TextField } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { IInsumo } from "../../../../types/IInsumo";
 import { handleConfirm } from "../../../../helpers/alerts";
@@ -28,40 +28,36 @@ const columns = [
   {
     label: "Cantidad",
     key: "cantidad",
-    render: (element: IInsumo) =>
-      `${element?.cantidad ?? "N/A"} ${element?.unidadMedida?.denominacion ?? "N/A"}`,
   },
   {
     label: "Acciones",
     key: "actions",
   },
-  {label:"Seleccionar",
-    key:"seleccionar"
+  {
+    label: "Seleccionar",
+    key: "seleccionar"
   }
 ];
 
 interface ITableIngredients {
   handleDeleteItem: (indice: number) => void;
   dataIngredients: IInsumo[];
-  onSelect: (selectedData: any) => void; // Agrega el tipo y la prop para la función de devolución de llamada
+  onSelect: (selectedData: any[]) => void;
 }
 
 export const TableIngredients = ({
   handleDeleteItem,
   dataIngredients,
-  onSelect, // Asegúrate de recibir la prop de la función de devolución de llamada
+  onSelect,
 }: ITableIngredients) => {
-  // Estado para almacenar las filas de la tabla
   const [rows, setRows] = useState<any[]>([]);
-  const handleSelect = (selectedData: any) => {
-    // Llama a la función de devolución de llamada con los datos seleccionados
-    onSelect(selectedData);
-  };
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
   useEffect(() => {
-    // Asignar IDs automáticamente basados en el índice
     const updatedRows = dataIngredients.map((ingredient, index) => ({
       ...ingredient,
       id: index + 1,
+      cantidad: ingredient.cantidad || 0,
     }));
     setRows(updatedRows);
   }, [dataIngredients]);
@@ -73,17 +69,36 @@ export const TableIngredients = ({
     handleConfirm("¿Seguro quieres eliminar este insumo?", handleDelete);
   };
 
-
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
+    const checked = event.target.checked;
+    let updatedSelectedRows;
+    if (checked) {
+      updatedSelectedRows = [...selectedRows, rowData];
+    } else {
+      updatedSelectedRows = selectedRows.filter(row => row.id !== rowData.id);
+    }
+    setSelectedRows(updatedSelectedRows);
+    onSelect(updatedSelectedRows);
+  };
+
+  const handleCantidadChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, rowData: any) => {
+    const newCantidad = event.target.value;
     const updatedRows = rows.map((row) => {
-      if (row === rowData) {
-        // Si es la fila seleccionada, actualiza su propiedad selected
-        return { ...row, selected: event.target.checked };
+      if (row.id === rowData.id) {
+        return { ...row, cantidad: newCantidad };
       }
       return row;
     });
     setRows(updatedRows);
-    onSelect(rowData); // Llama a la función de devolución de llamada con los datos de la fila seleccionada
+
+    const updatedSelectedRows = selectedRows.map((row) => {
+      if (row.id === rowData.id) {
+        return { ...row, cantidad: newCantidad };
+      }
+      return row;
+    });
+    setSelectedRows(updatedSelectedRows);
+    onSelect(updatedSelectedRows);
   };
 
   return (
@@ -105,8 +120,15 @@ export const TableIngredients = ({
                 <TableCell key={i} align="center">
                   {column.key === "seleccionar" ? (
                     <Checkbox
-                      checked={row.selected}
-                      onChange={(event) => handleCheckboxChange(event, row)} // Pasa los datos de la fila al cambiar el estado del Checkbox
+                      checked={selectedRows.some(selectedRow => selectedRow.id === row.id)}
+                      onChange={(event) => handleCheckboxChange(event, row)}
+                    />
+                  ) : column.key === "cantidad" ? (
+                    <TextField
+                      type="number"
+                      value={row.cantidad}
+                      onChange={(event) => handleCantidadChange(event, row)}
+                      variant="filled"
                     />
                   ) : column.render ? (
                     column.render(row)
