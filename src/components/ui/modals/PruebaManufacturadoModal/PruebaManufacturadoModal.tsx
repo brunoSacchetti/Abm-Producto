@@ -18,6 +18,8 @@ import ProductoPost from "../../../../types/typesPrueba/post/ProductoPost";
 import { IInsumo } from "../../../../types/IInsumo";
 import { ProductoDetalleService } from "../../../../services/ProductoDetalleService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
+import { UnidadMedidaService } from "../../../../services/UnidadMedidaService";
+import IUnidadMedida from "../../../../types/IUnidadMedida";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,11 +47,16 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 }) => {
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
   const [selectedInsumoId, setSelectedInsumoId] = useState<number | null>(null);
+  const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<number | null>(null); //SELECTED UNIDAD MEDIDA ID 
   const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
   const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [insumos, setInsumos] = useState<IInsumo[]>([]);
   const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
+  const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
+
+  const unidadMedidaService = new UnidadMedidaService(`${API_URL}/UnidadMedida`);
+
   const productoManufacturadoService = new ProductoManufacturadoService(
     `${API_URL}/ArticuloManufacturado`
   );
@@ -74,6 +81,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
           productoData.idsArticuloManufacturadoDetalles,
         idUnidadMedida: productoData.idUnidadMedida,
       });
+      setSelectedUnidadMedidaId(productoData.idUnidadMedida); //PARA SETEAR EL ID DE UNIDAD DE
     } else {
       resetValues();
     }
@@ -81,6 +89,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 
   useEffect(() => {
     getInsumos();
+    getUnidadMedida();
   }, []);
 
   const resetValues = () => {
@@ -149,6 +158,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         productoId = itemValue.id;
       } else {
         // Si el producto es nuevo, lo creamos y obtenemos su ID
+        
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
@@ -177,6 +187,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       handleClose();
       resetValues();
       getData();
+      getUnidadMedida();
       dispatch(removeElementActive());
       getInsumos();
     } catch (error) {
@@ -213,6 +224,27 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     console.log("Datos filtrados en selectedDetalle:", filteredData);
   };
 
+
+
+  const getUnidadMedida = async () => {
+    try {
+      const data = await unidadMedidaService.getAll();
+      setUnidadMedida(data);
+    } catch (error) {
+      console.error("Error al obtener insumos:", error);
+    }
+  };
+
+  
+
+  const handleChangeUnidadMedidaValues = async (e: SelectChangeEvent<number>) => {
+    const unidadMedidaId = e.target.value as number;
+    setSelectedUnidadMedidaId(unidadMedidaId);
+    setItemValue({
+      ...itemValue,
+      idUnidadMedida: unidadMedidaId,
+    });
+  };
 
   return (
     <div>
@@ -268,7 +300,19 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   multiline
                   rows={4}
                 />
+                
               </div>
+               <Select
+              label="Unidad de Medida"
+              value={selectedUnidadMedidaId ?? ""}
+              onChange={handleChangeUnidadMedidaValues}
+            >
+              {unidadMedida.map((unidad) => (
+                <MenuItem key={unidad.id} value={unidad.id}>
+                  {unidad.denominacion}
+                </MenuItem>
+              ))}
+            </Select>
             </div>
             <div>
               <div style={{ textAlign: "center" }}>
