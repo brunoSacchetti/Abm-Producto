@@ -49,6 +49,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [insumos, setInsumos] = useState<IInsumo[]>([]);
+  const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
   const productoManufacturadoService = new ProductoManufacturadoService(
     `${API_URL}/ArticuloManufacturado`
   );
@@ -155,6 +156,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
       await Promise.all(
         dataIngredients.map(async (detalle) => {
+        //selectedDetalle.map(async (detalle) => {
           const newDetalle = {
             id: 0,
             cantidad: detalle.cantidad,
@@ -199,7 +201,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 
   const handleTableIngredientSelect = (selectedData: any) => {
     console.log("Datos seleccionados en TableIngredients:", selectedData);
+    setSelectedDetalle(selectedData);
+    console.log(selectedDetalle);
+    
   };
+
 
   return (
     <div>

@@ -1,3 +1,4 @@
+import React, { ChangeEvent, useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -6,7 +7,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Button, Checkbox, TextField } from "@mui/material";
-import { ChangeEvent, useEffect, useState } from "react";
 import { IInsumo } from "../../../../types/IInsumo";
 import { handleConfirm } from "../../../../helpers/alerts";
 
@@ -63,10 +63,10 @@ export const TableIngredients = ({
   }, [dataIngredients]);
 
   const handleDelete = (index: number) => {
-    const handleDelete = () => {
+    const deleteCallback = () => {
       handleDeleteItem(index);
     };
-    handleConfirm("¿Seguro quieres eliminar este insumo?", handleDelete);
+    handleConfirm("¿Seguro quieres eliminar este insumo?", deleteCallback);
   };
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
@@ -100,6 +100,7 @@ export const TableIngredients = ({
     setSelectedRows(updatedSelectedRows);
     onSelect(updatedSelectedRows);
   };
+  
 
   return (
     <TableContainer component={Paper} sx={{ maxHeight: "25vh" }}>
