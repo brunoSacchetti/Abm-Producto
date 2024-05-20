@@ -141,7 +141,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     try {
       let productoId: number;
       let detallesIds: number[] = []; // Array para almacenar los IDs de los detalles
-
+  
       // Verificar si el producto ya existe o es nuevo
       if (data) {
         // Si el producto ya existe, actualizamos sus detalles
@@ -152,28 +152,27 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
-
+  
       // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
       await Promise.all(
-        dataIngredients.map(async (detalle) => {
-        //selectedDetalle.map(async (detalle) => {
+        selectedDetalle.map(async (detalle) => {
           const newDetalle = {
             id: 0,
             cantidad: detalle.cantidad,
-            idArticuloInsumo: detalle.insumo.id, // Usar el ID del insumo
+            idArticuloInsumo: detalle.id, // Usar el ID del insumo desde selectedDetalle
             idArticuloManufacturado: productoId, // Asignar el ID del producto
           };
           const createdDetalle = await productoDetalleService.post(newDetalle);
           detallesIds.push(createdDetalle.id); // Almacenar el ID del detalle
         })
       );
-
+  
       // Asignar los IDs de los detalles al producto principal
       await productoManufacturadoService.put(productoId, {
         ...itemValue,
         idsArticuloManufacturadoDetalles: detallesIds, // Usar los IDs de los detalles
       });
-
+  
       handleSuccess("Elemento guardado correctamente");
       handleClose();
       resetValues();
@@ -201,9 +200,17 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 
   const handleTableIngredientSelect = (selectedData: any) => {
     console.log("Datos seleccionados en TableIngredients:", selectedData);
-    setSelectedDetalle(selectedData);
-    console.log(selectedDetalle);
-    
+
+    // Filtrar datos necesarios de cada objeto en el array
+    const filteredData = selectedData.map((item: any) => ({
+      id: item.id,
+      cantidad: item.cantidad,
+      denominacion: item.denominacion
+    }));
+
+    // Setear el estado con los datos filtrados
+    setSelectedDetalle(filteredData);
+    console.log("Datos filtrados en selectedDetalle:", filteredData);
   };
 
 

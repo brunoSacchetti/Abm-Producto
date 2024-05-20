@@ -60,7 +60,7 @@ export const TableIngredients = ({
       cantidad: ingredient.cantidad || 0,
     }));
     setRows(updatedRows);
-  }, [dataIngredients]);
+  }, []);
 
   const handleDelete = (index: number) => {
     const deleteCallback = () => {
