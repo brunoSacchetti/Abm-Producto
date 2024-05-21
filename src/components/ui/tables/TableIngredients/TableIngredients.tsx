@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -6,9 +6,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Button, Checkbox, TextField } from "@mui/material";
+import { Checkbox, TextField } from "@mui/material";
 import { IInsumo } from "../../../../types/IInsumo";
-import { handleConfirm } from "../../../../helpers/alerts";
+
 
 const columns = [
   {
@@ -40,13 +40,11 @@ const columns = [
 ];
 
 interface ITableIngredients {
-/*   handleDeleteItem: (indice: number) => void; */
   dataIngredients: IInsumo[];
   onSelect: (selectedData: any[]) => void;
 }
 
 export const TableIngredients = ({
-/*   handleDeleteItem, */
   dataIngredients,
   onSelect,
 }: ITableIngredients) => {
@@ -61,13 +59,6 @@ export const TableIngredients = ({
     }));
     setRows(updatedRows);
   }, []);
-
-  /* const handleDelete = (index: number) => {
-    const deleteCallback = () => {
-      handleDeleteItem(index);
-    };
-    handleConfirm("¿Seguro quieres eliminar este insumo?", deleteCallback);
-  }; */
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
     const checked = event.target.checked;
@@ -133,11 +124,7 @@ export const TableIngredients = ({
                     />
                   ) : column.render ? (
                     column.render(row)
-                  ) /* : column.key === "actions" ? (
-                    <Button variant="text" onClick={() => handleDelete(index)}>
-                      Eliminar
-                    </Button>
-                  ) */ : (
+                  ) : (
                     row[column.key]
                   )}
                 </TableCell>
