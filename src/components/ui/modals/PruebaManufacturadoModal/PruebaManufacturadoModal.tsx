@@ -1,4 +1,5 @@
-import React, { ChangeEvent, FC, useEffect, useState } from "react";
+//#region IMPORTS
+import { ChangeEvent, FC, useEffect, useState } from "react";
 import {
   Button,
   MenuItem,
@@ -13,7 +14,7 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { InsumoServices } from "../../../../services/InsumosServices";
 import { handleSuccess } from "../../../../helpers/alerts";
-import IProductoDetalle from "../../../../types/IProductoDetalle";
+/* import IProductoDetalle from "../../../../types/IProductoDetalle"; */
 import ProductoPost from "../../../../types/typesPrueba/post/ProductoPost";
 import { IInsumo } from "../../../../types/IInsumo";
 import { ProductoDetalleService } from "../../../../services/ProductoDetalleService";
@@ -22,6 +23,7 @@ import { UnidadMedidaService } from "../../../../services/UnidadMedidaService";
 import IUnidadMedida from "../../../../types/IUnidadMedida";
 
 const API_URL = import.meta.env.VITE_API_URL;
+//#endregion
 
 const initialValues: ProductoPost = {
   id: 0,
@@ -45,29 +47,53 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   open,
   getData,
 }) => {
+  
+  //#region States                                                                                                
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
   const [selectedInsumoId, setSelectedInsumoId] = useState<number | null>(null);
   const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<number | null>(null); //SELECTED UNIDAD MEDIDA ID 
   const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
   const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
-  const [insumos, setInsumos] = useState<IInsumo[]>([]);
+  const [insumos, /* setInsumos */] = useState<IInsumo[]>([]);
   const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
   const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
-
+/* TODOS LOS SERVICES */
   const unidadMedidaService = new UnidadMedidaService(`${API_URL}/UnidadMedida`);
-
-  const productoManufacturadoService = new ProductoManufacturadoService(
-    `${API_URL}/ArticuloManufacturado`
-  );
-  const productoDetalleService = new ProductoDetalleService(
-    `${API_URL}/ArticuloManufacturadoDetalle`
-  );
+  const productoManufacturadoService = new ProductoManufacturadoService(`${API_URL}/ArticuloManufacturado`);
+  const productoDetalleService = new ProductoDetalleService(`${API_URL}/ArticuloManufacturadoDetalle`);
   const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
+  //#endregion
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
 
-  useEffect(() => {
+  //#region GetAllUnidadMedida-Insumos
+  const getUnidadMedida = async () => {
+    try {
+      const data = await unidadMedidaService.getAll();
+      setUnidadMedida(data);
+    } catch (error) {
+      console.error("Error al obtener insumos:", error);
+    }
+  };
+  //GET ALL INSUNMOS
+  const getInsumos = async () => {
+    try {
+      const data = await insumosServices.getAll();
+      setDataIngredients(
+        data.map((insumo) => ({
+          cantidad: 0,
+          insumo: insumo,
+        }))
+      );
+    } catch (error) {
+      console.error("Error al obtener insumos:", error);
+    }
+  };
+//#endregion
+  
+  //#region UseEffect SetData And GetData[] methods
+useEffect(() => {
     if (data) {
       const productoData: ProductoPost = data as ProductoPost;
       setItemValue({
@@ -90,7 +116,10 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   useEffect(() => {
     getInsumos();
     getUnidadMedida();
-  }, []);
+  }, [,dataIngredients]);
+  //#endregion
+  
+  //#region ResetValues
 
   const resetValues = () => {
     setItemValue(initialValues);
@@ -99,8 +128,10 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     setUnidadMedidaInsumo("N/A");
     setDataIngredients([]);
   };
+//#endregion
+  
 
-  const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
+const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target;
     setItemValue({
       ...itemValue,
@@ -108,21 +139,12 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     });
   };
 
-  const handleChangeInsumosValues = async (e: SelectChangeEvent<number>) => {
-    const insumoId = e.target.value as number;
-    setSelectedInsumoId(insumoId);
-    const selectedInsumo = insumos.find((insumo) => insumo.id === insumoId);
-    if (selectedInsumo) {
-      setUnidadMedidaInsumo(selectedInsumo.unidadMedida.denominacion);
-    }
-  };
-
   const handleAmountInsumoValue = (e: ChangeEvent<HTMLInputElement>) => {
     const cantidad = parseInt(e.target.value);
     setCantidadInsumo(cantidad);
   };
 
-  const handleNewIngredient = () => {
+  /* const handleNewIngredient = () => {
     if (selectedInsumoId !== null && cantidadInsumo > 0) {
       const selectedInsumo = insumos.find(
         (insumo) => insumo.id === selectedInsumoId
@@ -138,14 +160,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         setUnidadMedidaInsumo("N/A");
       }
     }
-  };
+  }; */
 
-  const deleteIngredient = (indice: number) => {
-    setDataIngredients(
-      dataIngredients.filter((_el, index) => index !== indice)
-    );
-  };
-
+  //#region CONFIRMACION-ENVIO
   const handleConfirmModal = async () => {
     try {
       let productoId: number;
@@ -158,7 +175,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         productoId = itemValue.id;
       } else {
         // Si el producto es nuevo, lo creamos y obtenemos su ID
-        
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
@@ -194,48 +210,35 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       console.error("Error al confirmar modal:", error);
     }
   };
+  //#endregion
 
-  const getInsumos = async () => {
-    try {
-      const data = await insumosServices.getAll();
-      setDataIngredients(
-        data.map((insumo) => ({
-          cantidad: 0,
-          insumo: insumo,
-        }))
-      );
-    } catch (error) {
-      console.error("Error al obtener insumos:", error);
-    }
-  };
+  /* const deleteIngredient = (indice: number) => {
+    setDataIngredients(
+      dataIngredients.filter((_el, index) => index !== indice)
+    );
+  }; */
 
   const handleTableIngredientSelect = (selectedData: any) => {
-    console.log("Datos seleccionados en TableIngredients:", selectedData);
-
     // Filtrar datos necesarios de cada objeto en el array
     const filteredData = selectedData.map((item: any) => ({
       id: item.id,
       cantidad: item.cantidad,
       denominacion: item.denominacion
     }));
-
     // Setear el estado con los datos filtrados
     setSelectedDetalle(filteredData);
-    console.log("Datos filtrados en selectedDetalle:", filteredData);
   };
 
-
-
-  const getUnidadMedida = async () => {
-    try {
-      const data = await unidadMedidaService.getAll();
-      setUnidadMedida(data);
-    } catch (error) {
-      console.error("Error al obtener insumos:", error);
+  // #region HandleChangeEventIngredientesUnidadMedida
+  
+const handleChangeInsumosValues = async (e: SelectChangeEvent<number>) => {
+    const insumoId = e.target.value as number;
+    setSelectedInsumoId(insumoId);
+    const selectedInsumo = insumos.find((insumo) => insumo.id === insumoId);
+    if (selectedInsumo) {
+      setUnidadMedidaInsumo(selectedInsumo.unidadMedida.denominacion);
     }
   };
-
-  
 
   const handleChangeUnidadMedidaValues = async (e: SelectChangeEvent<number>) => {
     const unidadMedidaId = e.target.value as number;
@@ -245,8 +248,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       idUnidadMedida: unidadMedidaId,
     });
   };
-
-  return (
+// #endregion HandleChangeEvent
+  
+return (
     <div>
       <Modal
         open={open}
@@ -302,10 +306,12 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                 />
                 
               </div>
+              <h1>Unidad De Medida</h1>
                <Select
               label="Unidad de Medida"
               value={selectedUnidadMedidaId ?? ""}
               onChange={handleChangeUnidadMedidaValues}
+              variant="filled"
             >
               {unidadMedida.map((unidad) => (
                 <MenuItem key={unidad.id} value={unidad.id}>
@@ -381,9 +387,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   variant="filled"
                   defaultValue={10}
                 />
-                <Button onClick={handleNewIngredient} variant="text">
+{/*                 <Button onClick={handleNewIngredient} variant="text">
                   Añadir
-                </Button>
+                </Button> */}
               </div>
             </div>
             <div className={styles.ingredientesTableContainer}>
@@ -395,7 +401,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                       ...detalle.insumo,
                       cantidad: detalle.cantidad,
                     }))}
-                    handleDeleteItem={deleteIngredient}
+/*                     handleDeleteItem={deleteIngredient} */
                     onSelect={handleTableIngredientSelect} // Pasa la función de devolución de llamada
                   />
                 </div>

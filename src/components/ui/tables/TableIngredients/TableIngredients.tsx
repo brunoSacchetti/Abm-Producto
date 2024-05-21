@@ -40,13 +40,13 @@ const columns = [
 ];
 
 interface ITableIngredients {
-  handleDeleteItem: (indice: number) => void;
+/*   handleDeleteItem: (indice: number) => void; */
   dataIngredients: IInsumo[];
   onSelect: (selectedData: any[]) => void;
 }
 
 export const TableIngredients = ({
-  handleDeleteItem,
+/*   handleDeleteItem, */
   dataIngredients,
   onSelect,
 }: ITableIngredients) => {
@@ -62,12 +62,12 @@ export const TableIngredients = ({
     setRows(updatedRows);
   }, []);
 
-  const handleDelete = (index: number) => {
+  /* const handleDelete = (index: number) => {
     const deleteCallback = () => {
       handleDeleteItem(index);
     };
     handleConfirm("¿Seguro quieres eliminar este insumo?", deleteCallback);
-  };
+  }; */
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
     const checked = event.target.checked;
@@ -133,11 +133,11 @@ export const TableIngredients = ({
                     />
                   ) : column.render ? (
                     column.render(row)
-                  ) : column.key === "actions" ? (
+                  ) /* : column.key === "actions" ? (
                     <Button variant="text" onClick={() => handleDelete(index)}>
                       Eliminar
                     </Button>
-                  ) : (
+                  ) */ : (
                     row[column.key]
                   )}
                 </TableCell>
