@@ -14,6 +14,8 @@ import { Button, CircularProgress, styled } from "@mui/material";
 /* import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado"; */
 import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
 import AddIcon from '@mui/icons-material/Add';
+import { CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
+import ProductoPost from "../../types/typesPrueba/post/ProductoPost";
 
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
@@ -75,7 +77,11 @@ export const ArticuloManufacturadoScreen = () => {
   // Función para obtener los productos manufacturados
   const getDataTable = async () => {
     await productoManufacturadoService.getAll().then((dataTable) => {
-      dispatch(setDataTable(dataTable));
+      const productoPosts: ProductoPost[] = dataTable.map((item) => {
+        // Assuming ProductoPost and IProductoManufacturado have similar properties
+        return item as ProductoPost;
+      });
+      dispatch(setDataTable(productoPosts));
       setLoading(false);
     });
   };
@@ -104,9 +110,27 @@ export const ArticuloManufacturadoScreen = () => {
   };
 
 
+
+
   return (
     <div>
       <NavBar />
+
+      <CNavbar className="bg-body-tertiary">
+              <CContainer fluid>
+                <CForm className="d-flex">
+                  <CFormInput
+                    /* onChange={(e) => setSearchQuery(e.target.value)} */
+                    /* onChange={searchByName} */
+                    type="search"
+                    className="me-2"
+                    placeholder="Search"
+                  />
+
+                </CForm>
+              </CContainer>
+            </CNavbar>
+
       <div
         style={{
           height: "6vh",
@@ -122,15 +146,14 @@ export const ArticuloManufacturadoScreen = () => {
             padding: ".4rem",
           }}
         >
-          <StyledButton
+          <Button
             variant="contained"
-            startIcon={<AddIcon />} // Agregar icono
+            startIcon={<AddIcon />}
             onClick={() => {
               setOpenModal(true);
             }}
-          >
-            Agregar un producto manufacturado
-          </StyledButton>
+          >Añadir Producto
+          </Button>
         </div>
       </div>
 

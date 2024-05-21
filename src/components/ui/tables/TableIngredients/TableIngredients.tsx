@@ -30,10 +30,6 @@ const columns = [
     key: "cantidad",
   },
   {
-    label: "Acciones",
-    key: "actions",
-  },
-  {
     label: "Seleccionar",
     key: "seleccionar"
   }
@@ -50,7 +46,8 @@ export const TableIngredients = ({
 }: ITableIngredients) => {
   const [rows, setRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
-
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  
   useEffect(() => {
     const updatedRows = dataIngredients.map((ingredient, index) => ({
       ...ingredient,
@@ -59,6 +56,8 @@ export const TableIngredients = ({
     }));
     setRows(updatedRows);
   }, []);
+
+
 
   const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
     const checked = event.target.checked;
@@ -92,47 +91,63 @@ export const TableIngredients = ({
     onSelect(updatedSelectedRows);
   };
   
+  useEffect(() => {
+    const results = dataIngredients.filter((ingredient) =>
+      ingredient.denominacion.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setRows(results);
+  }, [searchTerm]);
+
+
 
   return (
-    <TableContainer component={Paper} sx={{ maxHeight: "25vh" }}>
-      <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            {columns.map((column, i: number) => (
-              <TableCell key={i} align="center">
-                {column.label}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row, index) => (
-            <TableRow role="checkbox" tabIndex={-1} key={index}>
-              {columns.map((column, i: number) => (
+    <div>
+      <TextField
+        label="Buscar ingrediente"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: 20, width: "90%" }}
+      />
+      <TableContainer component={Paper} sx={{ maxHeight: "50vh" }}>
+        <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              {columns.map((column, i) => (
                 <TableCell key={i} align="center">
-                  {column.key === "seleccionar" ? (
-                    <Checkbox
-                      checked={selectedRows.some(selectedRow => selectedRow.id === row.id)}
-                      onChange={(event) => handleCheckboxChange(event, row)}
-                    />
-                  ) : column.key === "cantidad" ? (
-                    <TextField
-                      type="number"
-                      value={row.cantidad}
-                      onChange={(event) => handleCantidadChange(event, row)}
-                      variant="filled"
-                    />
-                  ) : column.render ? (
-                    column.render(row)
-                  ) : (
-                    row[column.key]
-                  )}
+                  {column.label}
                 </TableCell>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, index) => (
+              <TableRow role="checkbox" tabIndex={-1} key={index}>
+                {columns.map((column, i) => (
+                  <TableCell key={i} align="center">
+                    {column.key === "seleccionar" ? (
+                      <Checkbox
+                        checked={selectedRows.some(selectedRow => selectedRow.id === row.id)}
+                        onChange={(event) => handleCheckboxChange(event, row)}
+                      />
+                    ) : column.key === "cantidad" ? (
+                      <TextField
+                        type="number"
+                        value={row.cantidad}
+                        onChange={(event) => handleCantidadChange(event, row)}
+                        variant="filled"
+                      />
+                    ) : column.render ? (
+                      column.render(row)
+                    ) : (
+                      row[column.key]
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   );
 };

@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -6,21 +7,20 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { useEffect, useState } from "react";
+import TextField from "@mui/material/TextField";
 import { ButtonsTable } from "../../buttons/ButtonsTable/ButtonsTable";
 import { useAppSelector } from "../../../../hooks/redux";
 import IProductoManufacturado from "../../../../types/IProductoManufacturado";
 
-// Definimos la interfaz para cada columna de la tabla
 interface ITableColumn<T> {
-  label: string; // Etiqueta de la columna
-  key: string; // Clave que corresponde a la propiedad del objeto en los datos
-  render?: (item: T) => React.ReactNode; // Función opcional para personalizar la renderización del contenido de la celda
+  label: string;
+  key: string;
+  render?: (item: T) => React.ReactNode;
 }
 
 export interface ITableProps<T> {
-  columns: ITableColumn<T>[]; // Definición de las columnas de la tabla
-  handleDelete: (id: number | string) => void; // Función para manejar la eliminación de un elemento
+  columns: ITableColumn<T>[];
+  handleDelete: (id: number | string) => void;
   setOpenModal: (state: boolean) => void;
   handleCancelOrRegister: (
     id: number | string,
@@ -36,13 +36,14 @@ export const TableGeneric = <T extends { id: any }>({
 }: ITableProps<T>) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  //SEARCH
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredRows, setFilteredRows] = useState<any[]>([]);
 
-  // Función para cambiar de página
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
   };
 
-  // Función para cambiar el número de filas por página
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -50,33 +51,38 @@ export const TableGeneric = <T extends { id: any }>({
     setPage(0);
   };
 
-  // Estado para almacenar las filas de la tabla
-  const [rows, setRows] = useState<any[]>([]);
-
-  // Obtener los datos de la tabla del estado global
   const dataTable = useAppSelector((state) => state.tablaReducer.dataTable);
 
-  // Actualizar las filas cuando cambien los datos de la tabla
   useEffect(() => {
-    setRows(dataTable);
+    setFilteredRows(dataTable);
   }, [dataTable]);
+
+  useEffect(() => {
+    const results = dataTable.filter((row) =>
+      row.denominacion.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredRows(results);
+    setPage(0);
+  }, [searchTerm, dataTable]);
 
   return (
     <div
       style={{
         width: "100%",
         display: "flex",
-        justifyContent: "center",
+        flexDirection: "column",
         alignItems: "center",
       }}
     >
-      {/* Contenedor del componente Paper */}
+      <TextField
+        label="Buscar producto"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginBottom: 20, width: "90%" }}
+      />
       <Paper sx={{ width: "90%", overflow: "hidden" }}>
-        {/* Contenedor de la tabla */}
         <TableContainer sx={{ maxHeight: "80vh" }}>
-          {/* Tabla */}
           <Table stickyHeader aria-label="sticky table">
-            {/* Encabezado de la tabla */}
             <TableHead>
               <TableRow>
                 {columns.map((column, i: number) => (
@@ -86,47 +92,36 @@ export const TableGeneric = <T extends { id: any }>({
                 ))}
               </TableRow>
             </TableHead>
-            {/* Cuerpo de la tabla */}
             <TableBody>
-              {rows
+              {filteredRows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index: number) => {
-                  return (
-                    <TableRow role="checkbox" tabIndex={-1} key={index}>
-                      {/* Celdas de la fila */}
-                      {columns.map((column, i: number) => {
-                        return (
-                          <TableCell key={i} align={"center"}>
-                            {
-                              column.render ? ( // Si existe la función "render" se ejecuta
-                                column.render(row)
-                              ) : column.label === "Acciones" ? ( // Si el label de la columna es "Acciones" se renderizan los botones de acción
-                                <ButtonsTable
-                                  el={row}
-                                  handleDelete={handleDelete}
-                                  setOpenModal={setOpenModal}
-                                  handleCancelOrRegister={
-                                    handleCancelOrRegister
-                                  }
-                                />
-                              ) : (
-                                row[column.key]
-                              ) // Si no hay una función personalizada, se renderiza el contenido de la celda tal cual
-                            }
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
+                .map((row, index: number) => (
+                  <TableRow role="checkbox" tabIndex={-1} key={index}>
+                    {columns.map((column, i: number) => (
+                      <TableCell key={i} align={"center"}>
+                        {column.render ? (
+                          column.render(row)
+                        ) : column.label === "Acciones" ? (
+                          <ButtonsTable
+                            el={row}
+                            handleDelete={handleDelete}
+                            setOpenModal={setOpenModal}
+                            handleCancelOrRegister={handleCancelOrRegister}
+                          />
+                        ) : (
+                          row[column.key]
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
-        {/* Paginación de la tabla */}
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
-          count={rows.length}
+          count={filteredRows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

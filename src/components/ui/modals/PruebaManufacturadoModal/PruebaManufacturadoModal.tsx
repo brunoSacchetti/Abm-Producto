@@ -14,13 +14,12 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { InsumoServices } from "../../../../services/InsumosServices";
 import { handleSuccess } from "../../../../helpers/alerts";
-/* import IProductoDetalle from "../../../../types/IProductoDetalle"; */
 import ProductoPost from "../../../../types/typesPrueba/post/ProductoPost";
-import { IInsumo } from "../../../../types/IInsumo";
 import { ProductoDetalleService } from "../../../../services/ProductoDetalleService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 import { UnidadMedidaService } from "../../../../services/UnidadMedidaService";
 import IUnidadMedida from "../../../../types/IUnidadMedida";
+import { CButton, CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 //#endregion
@@ -49,16 +48,24 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 }) => {
   //#region States
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
-  const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<number | null>(null);
+  const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<
+    number | null
+  >(null);
   const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
   const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
   const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
   /* TODOS LOS SERVICES */
-  const unidadMedidaService = new UnidadMedidaService(`${API_URL}/UnidadMedida`);
-  const productoManufacturadoService = new ProductoManufacturadoService(`${API_URL}/ArticuloManufacturado`);
-  const productoDetalleService = new ProductoDetalleService(`${API_URL}/ArticuloManufacturadoDetalle`);
+  const unidadMedidaService = new UnidadMedidaService(
+    `${API_URL}/UnidadMedida`
+  );
+  const productoManufacturadoService = new ProductoManufacturadoService(
+    `${API_URL}/ArticuloManufacturado`
+  );
+  const productoDetalleService = new ProductoDetalleService(
+    `${API_URL}/ArticuloManufacturadoDetalle`
+  );
   const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
   //#endregion
   const dispatch = useAppDispatch();
@@ -136,11 +143,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     });
   };
 
-  const handleAmountInsumoValue = (e: ChangeEvent<HTMLInputElement>) => {
-    const cantidad = parseInt(e.target.value);
-    setCantidadInsumo(cantidad);
-  };
-
   //#region CONFIRMACION-ENVIO
   const handleConfirmModal = async () => {
     try {
@@ -203,7 +205,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   };
 
   //#region HandleChangeEventIngredientesUnidadMedida
-  const handleChangeUnidadMedidaValues = async (e: SelectChangeEvent<number>) => {
+  const handleChangeUnidadMedidaValues = async (
+    e: SelectChangeEvent<number>
+  ) => {
     const unidadMedidaId = e.target.value as number;
     setSelectedUnidadMedidaId(unidadMedidaId);
     setItemValue({
@@ -212,6 +216,8 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     });
   };
   //#endregion HandleChangeEvent
+
+ 
 
   return (
     <div>
@@ -314,25 +320,10 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   justifyContent: "space-around",
                   marginBottom: "2vh",
                 }}
-              >
-                <TextField
-                  type="text"
-                  label={unidadMedidaInsumo}
-                  value={unidadMedidaInsumo}
-                  variant="filled"
-                  disabled
-                />
-                <TextField
-                  type="number"
-                  name="cantidad"
-                  label="IngreseCantidad"
-                  onChange={handleAmountInsumoValue}
-                  value={cantidadInsumo}
-                  variant="filled"
-                  defaultValue={10}
-                />
-              </div>
+              ></div>
             </div>
+            
+
             <div className={styles.ingredientesTableContainer}>
               {dataIngredients.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
@@ -342,7 +333,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                       ...detalle.insumo,
                       cantidad: detalle.cantidad,
                     }))}
-                    onSelect={handleTableIngredientSelect} // Pasa la función de devolución de llamada
+                    onSelect={handleTableIngredientSelect}
                   />
                 </div>
               ) : (
