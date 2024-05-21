@@ -115,22 +115,6 @@ export const ArticuloManufacturadoScreen = () => {
   return (
     <div>
       <NavBar />
-
-      <CNavbar className="bg-body-tertiary">
-              <CContainer fluid>
-                <CForm className="d-flex">
-                  <CFormInput
-                    /* onChange={(e) => setSearchQuery(e.target.value)} */
-                    /* onChange={searchByName} */
-                    type="search"
-                    className="me-2"
-                    placeholder="Search"
-                  />
-
-                </CForm>
-              </CContainer>
-            </CNavbar>
-
       <div
         style={{
           height: "6vh",
