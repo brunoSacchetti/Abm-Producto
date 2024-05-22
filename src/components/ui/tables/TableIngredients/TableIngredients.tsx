@@ -6,9 +6,11 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Checkbox, TextField } from "@mui/material";
+import { Checkbox, Select, TextField } from "@mui/material";
 import { IInsumo } from "../../../../types/IInsumo";
+import { CategoriaService } from "../../../../services/CategoriaService";
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 const columns = [
   {
@@ -31,8 +33,8 @@ const columns = [
   },
   {
     label: "Seleccionar",
-    key: "seleccionar"
-  }
+    key: "seleccionar",
+  },
 ];
 
 interface ITableIngredients {
@@ -47,7 +49,8 @@ export const TableIngredients = ({
   const [rows, setRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  
+  const [categoria, setCategoria] = useState<any[]>([]);
+
   useEffect(() => {
     const updatedRows = dataIngredients.map((ingredient, index) => ({
       ...ingredient,
@@ -57,40 +60,57 @@ export const TableIngredients = ({
     setRows(updatedRows);
   }, []);
 
+  // #region Categorias Service
 
+  const categoriaService = new CategoriaService(API_URL + "/categoria");
 
-  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>, rowData: any) => {
+  useEffect(() => {
+    categoriaService.getAll().then((data) => {
+      setCategoria(data);
+    });
+  }, []);
+
+  console.log(categoria);
+  
+
+  const handleCheckboxChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    rowData: any
+  ) => {
     const checked = event.target.checked;
     let updatedSelectedRows;
     if (checked) {
       updatedSelectedRows = [...selectedRows, rowData];
     } else {
-      updatedSelectedRows = selectedRows.filter(row => row.id !== rowData.id);
+      updatedSelectedRows = selectedRows.filter((row) => row.id !== rowData.id);
     }
     setSelectedRows(updatedSelectedRows);
     onSelect(updatedSelectedRows);
   };
 
-  const handleCantidadChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, rowData: any) => {
-    const newCantidad = event.target.value;
-    const updatedRows = rows.map((row) => {
-      if (row.id === rowData.id) {
-        return { ...row, cantidad: newCantidad };
-      }
-      return row;
-    });
-    setRows(updatedRows);
+  const handleCantidadChange = (
+  event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  rowData: any
+) => {
+  const newCantidad = parseFloat(event.target.value);
+  const updatedRows = rows.map((row) => {
+    if (row.id === rowData.id) {
+      return { ...row, cantidad: newCantidad };
+    }
+    return row;
+  });
+  setRows(updatedRows);
 
-    const updatedSelectedRows = selectedRows.map((row) => {
-      if (row.id === rowData.id) {
-        return { ...row, cantidad: newCantidad };
-      }
-      return row;
-    });
-    setSelectedRows(updatedSelectedRows);
-    onSelect(updatedSelectedRows);
+  const updatedSelectedRows = selectedRows.map((row) => {
+    if (row.id === rowData.id) {
+      return { ...row, cantidad: newCantidad };
+    }
+    return row;
+  });
+  setSelectedRows(updatedSelectedRows);
+  onSelect(updatedSelectedRows);
   };
-  
+
   useEffect(() => {
     const results = dataIngredients.filter((ingredient) =>
       ingredient.denominacion.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,17 +118,25 @@ export const TableIngredients = ({
     setRows(results);
   }, [searchTerm]);
 
-
-
   return (
     <div>
       <TextField
         label="Buscar ingrediente"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: 20, width: "90%" }}
+        style={{ marginBottom: 20, width: "30%" }}
       />
-      <TableContainer component={Paper} sx={{ maxHeight: "50vh" }}>
+      <Select style={{marginLeft: 40}}
+                label="Categorias"
+               /*  value={selectedUnidadMedidaId ?? ""}
+                onChange={handleChangeUnidadMedidaValues} */
+                variant="filled"
+              >
+      </Select>
+      <TableContainer
+        component={Paper}
+        sx={{ maxHeight: "55vh", height: "600px" }}
+      >
         <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
           <TableHead>
             <TableRow>
@@ -126,7 +154,9 @@ export const TableIngredients = ({
                   <TableCell key={i} align="center">
                     {column.key === "seleccionar" ? (
                       <Checkbox
-                        checked={selectedRows.some(selectedRow => selectedRow.id === row.id)}
+                        checked={selectedRows.some(
+                          (selectedRow) => selectedRow.id === row.id
+                        )}
                         onChange={(event) => handleCheckboxChange(event, row)}
                       />
                     ) : column.key === "cantidad" ? (

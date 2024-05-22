@@ -1,10 +1,10 @@
 import { IBase } from "./IBase";
 
-export interface categorias extends IBase<categorias> {
+export interface ICategoria extends IBase<ICategoria> {
   denominacion: string; 
   esInsumo:boolean;
-  subCategoria: categorias[] | null;
-  /*   idArticulos:number; */
+  subCategoria: ICategoria[] | null;
+  idArticulos:number
 }
 
 /* export interface categorias {

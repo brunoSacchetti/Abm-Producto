@@ -5,8 +5,8 @@ import ProductoPost from "../../types/typesPrueba/post/ProductoPost";
 
 // Definimos la interfaz para el estado inicial del slice
 interface IInitialState {
-  dataTable: ProductoPost[]; // Datos de la tabla
-  elementActive: null | ProductoPost; // Elemento activo seleccionado
+  dataTable: ProductoPost[] | IProductoManufacturado[]; // Datos de la tabla
+  elementActive: null | ProductoPost | IProductoManufacturado[]; // Elemento activo seleccionado
 }
 
 // Estado inicial del slice
@@ -26,7 +26,7 @@ const TablaReducer = createSlice({
   initialState, // Estado inicial del slice
   reducers: {
     // Reducer para establecer los datos de la tabla
-    setDataTable(state, action: PayloadAction<ProductoPost[]>) {
+    setDataTable(state, action: PayloadAction<ProductoPost[] | IProductoManufacturado[]>) {
       state.dataTable = action.payload; // Actualizamos los datos de la tabla con los datos proporcionados
     },
     // Reducer para establecer el elemento activo

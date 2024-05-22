@@ -11,6 +11,11 @@ import TextField from "@mui/material/TextField";
 import { ButtonsTable } from "../../buttons/ButtonsTable/ButtonsTable";
 import { useAppSelector } from "../../../../hooks/redux";
 import IProductoManufacturado from "../../../../types/IProductoManufacturado";
+import { Select } from "@mui/material";
+import { CategoriaService } from "../../../../services/CategoriaService";
+import { ICategoria } from "../../../../types/ICategoria";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface ITableColumn<T> {
   label: string;
@@ -39,6 +44,7 @@ export const TableGeneric = <T extends { id: any }>({
   //SEARCH
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredRows, setFilteredRows] = useState<any[]>([]);
+  const [categoria, setCategoria] = useState<ICategoria[]>([]);
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
@@ -65,6 +71,17 @@ export const TableGeneric = <T extends { id: any }>({
     setPage(0);
   }, [searchTerm, dataTable]);
 
+  // #region Categoria Service
+  const categoriaService = new CategoriaService(API_URL + "/categoria");
+
+  useEffect(() => {
+    categoriaService.getAll().then((data) => {
+      setCategoria(data);
+    });
+  }, []);
+
+  console.log(categoria);
+
   return (
     <div
       style={{
@@ -74,12 +91,27 @@ export const TableGeneric = <T extends { id: any }>({
         alignItems: "center",
       }}
     >
-      <TextField
-        label="Buscar producto"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ marginBottom: 20, width: "90%" }}
-      />
+      <div style={{ display: "flex", marginBottom: 20 }}>
+        <TextField
+          label="Buscar producto"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ marginRight: 20 }}
+        />
+        <Select
+          label="Categorias"
+          variant="filled"
+          /* value={}
+          onchange={} */
+          style={{ minWidth: 150 }}
+        >
+          {categoria.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.denominacion}
+            </option>
+          ))}
+        </Select>
+      </div>
       <Paper sx={{ width: "90%", overflow: "hidden" }}>
         <TableContainer sx={{ maxHeight: "80vh" }}>
           <Table stickyHeader aria-label="sticky table">

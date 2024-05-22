@@ -20,6 +20,9 @@ import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 import { UnidadMedidaService } from "../../../../services/UnidadMedidaService";
 import IUnidadMedida from "../../../../types/IUnidadMedida";
 import { CButton, CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
+import { IInsumo } from "../../../../types/IInsumo";
+import { ICategoria } from "../../../../types/ICategoria";
+import { CategoriaService } from "../../../../services/CategoriaService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 //#endregion
@@ -31,7 +34,7 @@ const initialValues: ProductoPost = {
   tiempoEstimadoMinutos: 10,
   precioVenta: 100,
   preparacion: "",
-  idUnidadMedida: 4,
+  idUnidadMedida: 1,
   idsArticuloManufacturadoDetalles: [],
 };
 
@@ -48,14 +51,14 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
 }) => {
   //#region States
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
-  const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<
-    number | null
-  >(null);
+  const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] = useState<number>(1);
   const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
   const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
   const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
   const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
+  const [categoria, setCategoria] = useState<ICategoria[]>([]);
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number>(1);
   /* TODOS LOS SERVICES */
   const unidadMedidaService = new UnidadMedidaService(
     `${API_URL}/UnidadMedida`
@@ -67,6 +70,8 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     `${API_URL}/ArticuloManufacturadoDetalle`
   );
   const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
+  const categoriaService = new CategoriaService(`${API_URL}/categoria`);
+
   //#endregion
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
@@ -81,8 +86,20 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
+  // #region Obtener Categorias
+  const getCategorias = async () => {
+    try {
+      const data = await categoriaService.getAll();
+      setCategoria(data);
+    } catch (error) {
+      console.error("Error al obtener las categorías:", error);
+    }
+  };
+  //#endregion
+
   //GET ALL INSUNMOS
-  const getInsumos = async () => {
+  
+  /* const getInsumos = async () => {
     try {
       const data = await insumosServices.getAll();
       setDataIngredients(
@@ -94,7 +111,26 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     } catch (error) {
       console.error("Error al obtener insumos:", error);
     }
+  }; */
+
+  const getInsumos = async () => {
+    try {
+      const data: IInsumo[] = await insumosServices.getAll();
+  
+      // Filtrar los insumos que no son para elaborar
+      const insumosNoElaborar: IInsumo[] = data.filter((insumo) => insumo.esParaElaborar);
+  
+      setDataIngredients(
+        insumosNoElaborar.map((insumo) => ({
+          cantidad: 0,
+          insumo: insumo,
+        }))
+      );
+    } catch (error) {
+      console.error("Error al obtener insumos:", error);
+    }
   };
+  
   //#endregion
 
   //#region UseEffect SetData And GetData[] methods
@@ -122,6 +158,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     if (open) {
       getInsumos();
       getUnidadMedida();
+      getCategorias();
     }
   }, [open]);
   //#endregion
@@ -159,6 +196,12 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
+
+      console.log(selectedCategoriaId, productoId);
+    
+      // Asignar la categoria al producto
+      await categoriaService.addArticuloManufacturado(selectedCategoriaId, productoId);
+
 
       // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
       await Promise.all(
@@ -217,6 +260,20 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   };
   //#endregion HandleChangeEvent
 
+  // #region handle Categoria ID
+  const handleChangeCategoriaValues = async (
+    e: SelectChangeEvent<number>
+  ) => {
+    const categoriaId = e.target.value as number;
+    console.log(categoriaId);
+    setSelectedCategoriaId(categoriaId);
+    /* setItemValue({
+      ...itemValue,
+      idUnidadMedida: unidadMedidaId,
+    }); */
+
+  };
+  // #endregion HandleChangeEvent
  
 
   return (
@@ -285,6 +342,19 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                   </MenuItem>
                 ))}
               </Select>
+              <h1>Categoria</h1>
+              <Select
+                label="Categoria"
+                value={selectedCategoriaId ?? ""}
+                onChange={handleChangeCategoriaValues}
+                variant="filled"
+              >
+                {categoria.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.denominacion}
+                  </MenuItem>
+                ))}
+              </Select>
             </div>
             <div>
               <div style={{ textAlign: "center" }}>
@@ -322,8 +392,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
                 }}
               ></div>
             </div>
-            
-
+          
             <div className={styles.ingredientesTableContainer}>
               {dataIngredients.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>

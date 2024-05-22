@@ -5,4 +5,5 @@ export default interface IArticulo extends IBase<IArticulo>{
   denominacion: string;
   precioVenta: number;
   unidadMedida: IUnidadMedida;
+  idCategoria: number;
 }

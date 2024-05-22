@@ -13,7 +13,7 @@ import styles from "./MasterDetailModal.module.css";
 import { TableIngredients } from "../../tables/TableIngredients/TableIngredients";
 import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { IInsumo } from "../../../../types/IInsumo";
-import { categorias } from "../../../../types/Icategorias";
+import { categorias } from "../../../../types/ICategoria";
 import { CategoriaComidaService } from "../../../../services/CategoriaComidaService";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
@@ -84,8 +84,6 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
       [`${name}`]: value,
     });
   };
-
-  
 
   //traemos categorias del apartado comida
   /* const [categoriaComidas, setcategoriaComidas] = useState<categorias[]>([]); */
@@ -311,8 +309,6 @@ export const MasterDetailModal: FC<IMasterDetailModal> = ({
                   multiline
                   rows={4}
                 />
-
-                
               </div>
             </div>
             <div>

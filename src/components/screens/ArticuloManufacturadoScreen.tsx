@@ -16,6 +16,9 @@ import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/
 import AddIcon from '@mui/icons-material/Add';
 import { CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
 import ProductoPost from "../../types/typesPrueba/post/ProductoPost";
+import { ProductoGet } from "../../services/ProductoGet";
+import { CategoriaService } from "../../services/CategoriaService";
+import { ICategoria } from "../../types/ICategoria";
 
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
@@ -35,6 +38,11 @@ const StyledButton = styled(Button)({
 const ColumnsProductosManufacturados = [
   { label: "Id", key: "id" },
   { label: "Nombre", key: "denominacion" },
+  
+  { label: "Categoria", 
+    key: "categoria",
+    //render: (element: ICategoria) =>  
+  },
   {
     label: "Tiempo de cocina",
     key: "tiempoEstimadoMinutos",
@@ -66,13 +74,21 @@ export const ArticuloManufacturadoScreen = () => {
   //instanciamos el loader de la carga de datos
   const [loading, setLoading] = useState<boolean>(false);
 
+  //useState para categorias
+  const [categorias, setCategorias] = useState<ICategoria[]>([]);
+
   //instanciamos el dispatch
   const dispatch = useAppDispatch();
 
-  //instanciamos los servicios
+  // #region SERVICIOS
   const productoManufacturadoService = new ProductoManufacturadoService(
     `${API_URL}/ArticuloManufacturado`
   );
+
+  const categoriaService = new CategoriaService(`${API_URL}/categoria`);
+
+  // #region Categorias
+
 
   // Función para obtener los productos manufacturados
   const getDataTable = async () => {
@@ -108,9 +124,6 @@ export const ArticuloManufacturadoScreen = () => {
     dispatch(removeElementActive());
     getDataTable();
   };
-
-
-
 
   return (
     <div>

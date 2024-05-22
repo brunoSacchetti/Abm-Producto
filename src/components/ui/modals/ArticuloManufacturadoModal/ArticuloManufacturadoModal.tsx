@@ -13,7 +13,7 @@ import styles from "./MasterDetailModal.module.css";
 import { TableIngredients } from "../../tables/TableIngredients/TableIngredients";
 import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { IInsumo } from "../../../../types/IInsumo";
-import { categorias } from "../../../../types/Icategorias";
+import { categorias } from "../../../../types/ICategoria";
 import { CategoriaComidaService } from "../../../../services/CategoriaComidaService";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
@@ -33,29 +33,29 @@ const initialValues: IProducto = {
   precioVenta: 100,
   preparacion: "",
   unidadMedida: {
-    id:0,
-    eliminado:false,
-    denominacion:"Pizzas" //cambiar para poder elegir unidad medida producto
+    id: 0,
+    eliminado: false,
+    denominacion: "Pizzas", //cambiar para poder elegir unidad medida producto
   },
   productoDetalle: [
-  {
-    id:0,
-    eliminado:false,
-    cantidad:1,
-    insumo:{
-      id:0,
-      eliminado:false,
-      denominacion:"Ingrediente",
-      precioVenta:0,
-      unidadMedida:{
-        id:0,
-        eliminado:false,
-        denominacion:""
+    {
+      id: 0,
+      eliminado: false,
+      cantidad: 1,
+      insumo: {
+        id: 0,
+        eliminado: false,
+        denominacion: "Ingrediente",
+        precioVenta: 0,
+        unidadMedida: {
+          id: 0,
+          eliminado: false,
+          denominacion: "",
+        },
+        esParaElaborar: true,
       },
-      esParaElaborar:true
-    }
-  }
-],
+    },
+  ],
 };
 const initialIngredients: IInsumo = {
   id: 0,
@@ -67,7 +67,7 @@ const initialIngredients: IInsumo = {
     eliminado: false,
     denominacion: "",
   },
-  esParaElaborar: true
+  esParaElaborar: true,
 };
 
 interface IMasterDetailModal {
@@ -128,8 +128,7 @@ export const ArticuloManufacturadoModal: FC<IMasterDetailModal> = ({
 
   //============INGREDIENTES DEL ARTICULO MANUFACTURADO
   //contiene el estado de nuestra manera de agregar los ingredientes
-  const [valueInsumos, setvaluesInsumo] =
-    useState<IInsumo>(initialIngredients);
+  const [valueInsumos, setvaluesInsumo] = useState<IInsumo>(initialIngredients);
   const resetValueInsumos = () => {
     setvaluesInsumo(initialIngredients);
   };
@@ -300,7 +299,7 @@ export const ArticuloManufacturadoModal: FC<IMasterDetailModal> = ({
         descripcion: productoData.descripcion,
         preparacion: productoData.preparacion,
         idsArticuloManufacturadoDetalles:
-        productoData.idsArticuloManufacturadoDetalles,
+          productoData.idsArticuloManufacturadoDetalles,
         unidadMedida: productoData.unidadMedida,
         eliminado: productoData.eliminado,
       });
