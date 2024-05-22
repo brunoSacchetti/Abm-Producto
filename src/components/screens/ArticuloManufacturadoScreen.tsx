@@ -1,24 +1,18 @@
 import { useEffect, useState } from "react";
-/* import { MasterDetailModal } from "../ui/modals/MasterDetailModal/MasterDetailModal"; */
 import { NavBar } from "../ui/NavBar/NavBar";
 import { TableGeneric } from "../ui/tables/TableGeneric/TableGeneric";
-import IProductoManufacturado from "../../types/IProductoManufacturado";
 import { ProductoManufacturadoService } from "../../services/ProductoManufacturadoService";
 import { useAppDispatch } from "../../hooks/redux";
-
 import {
   removeElementActive,
   setDataTable,
 } from "../../redux/slices/TablaReducer";
 import { Button, CircularProgress, styled } from "@mui/material";
-/* import { ProductoManufacturado } from "../ui/modals/ArticuloManufacturadoModal/ProductoManufacturado"; */
-import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
 import AddIcon from '@mui/icons-material/Add';
-import { CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
-import ProductoPost from "../../types/typesPrueba/post/ProductoPost";
-import { ProductoGet } from "../../services/ProductoGet";
+import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/PruebaManufacturadoModal";
 import { CategoriaService } from "../../services/CategoriaService";
 import { ICategoria } from "../../types/ICategoria";
+import IProductoManufacturado from "../../types/IProductoManufacturado";
 
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
@@ -35,13 +29,19 @@ const StyledButton = styled(Button)({
   },
 });
 
-const ColumnsProductosManufacturados = [
+const ColumnsProductosManufacturados = (categorias: ICategoria[]) => [
   { label: "Id", key: "id" },
   { label: "Nombre", key: "denominacion" },
-  
-  { label: "Categoria", 
+  { 
+    label: "Categoria", 
     key: "categoria",
-    //render: (element: ICategoria) =>  
+    render: (element: IProductoManufacturado) => {
+      // Buscar la categoría correspondiente al artículo manufacturado
+      const categoria = categorias.find(cat =>
+        cat.articulosManufacturados.some((am: IProductoManufacturado) => am.id === element.id)
+      );
+      return categoria ? categoria.denominacion : 'Categoría no encontrada';
+    },
   },
   {
     label: "Tiempo de cocina",
@@ -63,21 +63,21 @@ const ColumnsProductosManufacturados = [
 ];
 
 export const ArticuloManufacturadoScreen = () => {
-  //manejo de estado del modal
+  // manejo de estado del modal
   const [openModal, setOpenModal] = useState<boolean>(false);
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    dispatch(removeElementActive()); //al cerrar el modal siempre reseteamos el elemento activo
+    dispatch(removeElementActive()); // al cerrar el modal siempre reseteamos el elemento activo
   };
 
-  //instanciamos el loader de la carga de datos
-  const [loading, setLoading] = useState<boolean>(false);
+  // instanciamos el loader de la carga de datos
+  const [loading, setLoading] = useState<boolean>(true);
 
-  //useState para categorias
+  // useState para categorias
   const [categorias, setCategorias] = useState<ICategoria[]>([]);
 
-  //instanciamos el dispatch
+  // instanciamos el dispatch
   const dispatch = useAppDispatch();
 
   // #region SERVICIOS
@@ -87,42 +87,52 @@ export const ArticuloManufacturadoScreen = () => {
 
   const categoriaService = new CategoriaService(`${API_URL}/categoria`);
 
-  // #region Categorias
-
+  // Función para obtener las categorías
+  const fetchCategorias = async () => {
+    const data = await categoriaService.getAll();
+    setCategorias(data);
+  };
 
   // Función para obtener los productos manufacturados
   const getDataTable = async () => {
     await productoManufacturadoService.getAll().then((dataTable) => {
-      const productoPosts: ProductoPost[] = dataTable.map((item) => {
-        // Assuming ProductoPost and IProductoManufacturado have similar properties
-        return item as ProductoPost;
-      });
+      const productoPosts = dataTable.map((item) => item as IProductoManufacturado);
       dispatch(setDataTable(productoPosts));
-      setLoading(false);
     });
   };
 
   // Efecto para cargar los datos al inicio
   useEffect(() => {
-    setLoading(true);
-    getDataTable();
+    const fetchData = async () => {
+      setLoading(true);
+      await Promise.all([fetchCategorias(), getDataTable()]);
+      setLoading(false);
+    };
+    fetchData();
   }, []);
 
-  //funcion para eleminar un elemento
+  // Funcion para recargar datos (categorías y productos)
+  const reloadData = async () => {
+    setLoading(true);
+    await Promise.all([fetchCategorias(), getDataTable()]);
+    setLoading(false);
+  };
+
+  // función para eliminar un elemento
   const handleDelete = async (id: number | string) => {
     await productoManufacturadoService.delete(id);
     dispatch(removeElementActive());
-    getDataTable();
+    reloadData();
   };
 
-  //funcion para dar de baja o alta un elemento
+  // función para dar de baja o alta un elemento
   const handleCancelOrRegister = async (
     id: number | string,
     data: IProductoManufacturado
   ) => {
     await productoManufacturadoService.put(id, data);
     dispatch(removeElementActive());
-    getDataTable();
+    reloadData();
   };
 
   return (
@@ -149,16 +159,16 @@ export const ArticuloManufacturadoScreen = () => {
             onClick={() => {
               setOpenModal(true);
             }}
-          >Añadir Producto
+          >
+            Añadir Producto
           </Button>
         </div>
       </div>
 
       {!loading ? (
-        // Mostrar la tabla de personas una vez que los datos se han cargado
         <TableGeneric<IProductoManufacturado>
           handleDelete={handleDelete}
-          columns={ColumnsProductosManufacturados}
+          columns={ColumnsProductosManufacturados(categorias)}
           setOpenModal={setOpenModal}
           handleCancelOrRegister={handleCancelOrRegister}
         />
@@ -175,7 +185,7 @@ export const ArticuloManufacturadoScreen = () => {
         </div>
       )}
       <PruebaManufacturadoModal         
-        getData={getDataTable}
+        getData={reloadData}
         open={openModal}
         handleClose={handleCloseModal}
       />
