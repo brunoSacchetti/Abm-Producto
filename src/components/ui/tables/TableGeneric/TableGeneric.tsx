@@ -11,7 +11,7 @@ import TextField from "@mui/material/TextField";
 import { ButtonsTable } from "../../buttons/ButtonsTable/ButtonsTable";
 import { useAppSelector } from "../../../../hooks/redux";
 import IProductoManufacturado from "../../../../types/IProductoManufacturado";
-import { Select } from "@mui/material";
+import { MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { CategoriaService } from "../../../../services/CategoriaService";
 import { ICategoria } from "../../../../types/ICategoria";
 
@@ -80,8 +80,24 @@ export const TableGeneric = <T extends { id: any }>({
     });
   }, []);
 
-  console.log(categoria);
 
+  const getCategorias = async () => {
+    try {
+      const data = await categoriaService.getAll();
+      setCategoria(data);
+    } catch (error) {
+      console.error("Error al obtener unidades de medida:", error);
+    }
+  };
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number>(1);
+
+  const handleChangeCateogiras = async (
+    e: SelectChangeEvent<number>
+  ) => {
+    const categoriaId = e.target.value as number;
+    setSelectedCategoriaId(categoriaId);
+
+  };
   return (
     <div
       style={{
@@ -98,17 +114,17 @@ export const TableGeneric = <T extends { id: any }>({
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ marginRight: 20 }}
         />
+
         <Select
           label="Categorias"
+          value={selectedCategoriaId ?? ""}
+          onChange={handleChangeCateogiras}
           variant="filled"
-          /* value={}
-          onchange={} */
-          style={{ minWidth: 150 }}
         >
           {categoria.map((cat) => (
-            <option key={cat.id} value={cat.id}>
+            <MenuItem key={cat.id} value={cat.id}>
               {cat.denominacion}
-            </option>
+            </MenuItem>
           ))}
         </Select>
       </div>

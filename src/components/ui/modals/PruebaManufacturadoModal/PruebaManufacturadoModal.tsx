@@ -97,21 +97,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   };
   //#endregion
 
-  //GET ALL INSUNMOS
-  
-  /* const getInsumos = async () => {
-    try {
-      const data = await insumosServices.getAll();
-      setDataIngredients(
-        data.map((insumo) => ({
-          cantidad: 0,
-          insumo: insumo,
-        }))
-      );
-    } catch (error) {
-      console.error("Error al obtener insumos:", error);
-    }
-  }; */
 
   const getInsumos = async () => {
     try {

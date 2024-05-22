@@ -70,7 +70,7 @@ export const TableIngredients = ({
     });
   }, []);
 
-  console.log(categoria);
+
   
 
   const handleCheckboxChange = (

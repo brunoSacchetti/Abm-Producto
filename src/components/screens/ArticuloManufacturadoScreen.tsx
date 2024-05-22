@@ -167,11 +167,11 @@ export const ArticuloManufacturadoScreen = () => {
 
       {!loading ? (
         <TableGeneric<IProductoManufacturado>
-          handleDelete={handleDelete}
-          columns={ColumnsProductosManufacturados(categorias)}
-          setOpenModal={setOpenModal}
-          handleCancelOrRegister={handleCancelOrRegister}
-        />
+        handleDelete={handleDelete}
+        columns={ColumnsProductosManufacturados(categorias)}
+        setOpenModal={setOpenModal}
+        handleCancelOrRegister={handleCancelOrRegister}
+      />
       ) : (
         <div
           style={{
