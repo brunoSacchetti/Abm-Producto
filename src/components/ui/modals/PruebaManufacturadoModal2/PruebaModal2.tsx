@@ -108,6 +108,24 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
     }
   };
 
+  const getProductoDetalles = async (productoId: number) => {
+    try {
+      const detalles = await productoDetalleService.getById(productoId);
+      
+      // Ensure detalles is an array
+      const detallesArray = Array.isArray(detalles) ? detalles : [detalles];
+  
+      const formattedDetalles = detallesArray.map((detalle: any) => ({
+        id: detalle.idArticuloInsumo,
+        cantidad: detalle.cantidad,
+        denominacion: detalle.articuloInsumo.denominacion,
+      }));
+      setSelectedDetalle(formattedDetalles);
+    } catch (error) {
+      console.error("Error al obtener los detalles del producto:", error);
+    }
+  };
+
   useEffect(() => {
     if (data) {
       const productoData: ProductoPost = data as ProductoPost;
@@ -123,14 +141,13 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
       });
       setSelectedUnidadMedidaId(productoData.idUnidadMedida);
 
+      // Fetch and set the insumos related to the product
+      getProductoDetalles(productoData.id);
     } else {
       resetValues();
     }
   }, [data]);
 
-
-
-  
   useEffect(() => {
     if (open) {
       getInsumos();
@@ -153,12 +170,12 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
     });
   };
   console.log(itemValue);
-  
+
   const handleConfirmModal = async () => {
     try {
       let productoId: number;
       let detallesIds: number[] = [];
-  
+
       if (data) {
         await productoManufacturadoService.put(itemValue.id, itemValue);
         productoId = itemValue.id;
@@ -166,9 +183,9 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
-  
+
       await categoriaService.addArticuloManufacturado(selectedCategoriaId, productoId);
-  
+
       await Promise.all(
         selectedDetalle.map(async (detalle) => {
           const newDetalle = {
@@ -181,12 +198,12 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
           detallesIds.push(createdDetalle.id);
         })
       );
-  
+
       await productoManufacturadoService.put(productoId, {
         ...itemValue,
         idsArticuloManufacturadoDetalles: detallesIds,
       });
-  
+
       handleSuccess("Elemento guardado correctamente");
       handleClose();
       resetValues();
@@ -236,14 +253,14 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
     setSelectedDetalle([...selectedDetalle, ...selectedInsumos]);
     handleCloseInsumosModal();
   };
-  
+
   const handleRemoveInsumo = (id: number) => {
     const updatedDetalle = selectedDetalle.filter(
       (detalle) => detalle.id !== id
     );
     setSelectedDetalle(updatedDetalle);
   };
-  
+
   return (
     <div>
       <Modal
@@ -360,7 +377,6 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
               </div>
             </div>
 
-                    
             <div className={styles.ingredientesTableContainer}>
               {selectedDetalle.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
