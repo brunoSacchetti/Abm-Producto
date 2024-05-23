@@ -151,6 +151,8 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
       let detallesIds: number[] = [];
 
       if (data) {
+        console.log(itemValue);
+        
         await productoManufacturadoService.put(itemValue.id, itemValue);
         productoId = itemValue.id;
       } else {
@@ -237,10 +239,7 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
     );
     setSelectedDetalle(updatedDetalle);
   };
-
-  console.log(selectedDetalle);
   
-
   return (
     <div>
       <Modal
@@ -356,25 +355,8 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
                 </Button>
               </div>
             </div>
-            
-            <div className={styles.ingredientesTableContainer}>
-              {selectedDetalle.length > 0 ? (
-                <div className={styles.ingredientesTableContainerItem}>
-                  <TablePruebaModal2
-                    dataIngredients={selectedDetalle.map((detalle, index) => ({
-                      id: index + 1,
-                      ...detalle.insumo,
-                      cantidad: detalle.cantidad,
-                    }))}
-                    //onSelect={handleTableIngredientSelect}
-                  />
-                </div>
-              ) : (
-                <div>No hay insumos agregados</div>
-              )}
-            </div>
 
-
+                    
             <div className={styles.ingredientesTableContainer}>
               {selectedDetalle.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
