@@ -13,6 +13,7 @@ import { PruebaManufacturadoModal } from "../ui/modals/PruebaManufacturadoModal/
 import { CategoriaService } from "../../services/CategoriaService";
 import { ICategoria } from "../../types/ICategoria";
 import IProductoManufacturado from "../../types/IProductoManufacturado";
+import { PruebaModal2 } from "../ui/modals/PruebaManufacturadoModal2/PruebaModal2";
 
 // Definición de la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL;
@@ -184,7 +185,12 @@ export const ArticuloManufacturadoScreen = () => {
           <CircularProgress />
         </div>
       )}
-      <PruebaManufacturadoModal         
+      {/* <PruebaManufacturadoModal         
+        getData={reloadData}
+        open={openModal}
+        handleClose={handleCloseModal}
+      /> */}
+      <PruebaModal2         
         getData={reloadData}
         open={openModal}
         handleClose={handleCloseModal}

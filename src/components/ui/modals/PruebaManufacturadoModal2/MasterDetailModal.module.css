@@ -1,0 +1,45 @@
+.modalContainer {
+  width: 100vw;
+  z-index: 200;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modalContainerContent {
+  width: 80vw;
+  height: 90vh;
+  overflow-y: auto;
+  border-radius: 0.4rem;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.productContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2vh;
+  width: 100%;
+}
+.productContainerInputs {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+}
+.ingredientesTableContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2vh;
+  width: 100%;
+  margin-bottom: 4vh;
+}
+.ingredientesTableContainerItem {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+}

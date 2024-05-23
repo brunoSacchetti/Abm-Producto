@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { IInsumo } from "../../../../types/IInsumo";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
-import { InsumoServices } from "../../../../services/InsumosServices";
+import { InsumoServices } from "../../../../services/InsumoServices";
 import IProducto from "../../../../types/IProductoManufacturado";
 import { handleSuccess } from "../../../../helpers/alerts";
 import IProductoDetalle from "../../../../types/IProductoDetalle";
@@ -38,7 +38,7 @@ const initialValues: IProducto = {
       id: 0,
       eliminado: false,
       cantidad: 0,
-      insumo: { 
+      insumo: {
         id: 0,
         eliminado: false,
         denominacion: "",
@@ -49,16 +49,16 @@ const initialValues: IProducto = {
           denominacion: "",
         },
         esParaElaborar: true,
-      }
-    }
-  ]
+      },
+    },
+  ],
 };
 
 const initialIngredients: IProductoDetalle = {
   id: 0,
   eliminado: false,
   cantidad: 0,
-  insumo: { 
+  insumo: {
     id: 0,
     eliminado: false,
     denominacion: "",
@@ -102,12 +102,13 @@ export const ProductoManufacturado: FC<IMasterDetailModal> = ({
 
   //============INGREDIENTES DEL ARTICULO MANUFACTURADO
   //contiene el estado de nuestra manera de agregar los ingredientes
-  const [valueInsumos, setvaluesInsumo] = useState<IProductoDetalle>(initialIngredients);
+  const [valueInsumos, setvaluesInsumo] =
+    useState<IProductoDetalle>(initialIngredients);
   const resetValueInsumos = () => {
     setvaluesInsumo(initialIngredients);
   };
 
-  const[insumos, setInsumos] = useState<IInsumo[]>();
+  const [insumos, setInsumos] = useState<IInsumo[]>();
 
   //realizamos el cambio del ingrediente actual
   const handleChangeInsumosValues = async (e: SelectChangeEvent) => {
@@ -143,7 +144,7 @@ export const ProductoManufacturado: FC<IMasterDetailModal> = ({
   };
 
   // eliminamos un ingrediente
-const deleteIngredient = (indice: number) => {
+  const deleteIngredient = (indice: number) => {
     setItemValue({
       ...itemValue,
       productoDetalle: itemValue.productoDetalle.filter(
@@ -163,7 +164,7 @@ const deleteIngredient = (indice: number) => {
       await productoManufacturadoService.put(data.id, itemValue);
     } else {
       const parseNewId = { ...itemValue, id: amountItems + 1 };
-      
+
       await productoManufacturadoService.post(parseNewId);
     }
     handleSuccess("Elemento guardado correctamente");
@@ -178,15 +179,9 @@ const deleteIngredient = (indice: number) => {
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
 
-
-  
-  
-
-  
-
   //========SERVICIOS==================
 
-  const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`)
+  const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
 
   const productoManufacturadoService = new ProductoManufacturadoService(
     `${API_URL}/ArticuloManufacturado`
@@ -199,7 +194,6 @@ const deleteIngredient = (indice: number) => {
     });
   };
 
-  
   useEffect(() => {
     if (data) {
       setItemValue({
@@ -278,8 +272,6 @@ const deleteIngredient = (indice: number) => {
                   multiline
                   rows={4}
                 />
-
-                
               </div>
             </div>
             <div>
@@ -317,8 +309,6 @@ const deleteIngredient = (indice: number) => {
                   marginBottom: "2vh",
                 }}
               >
-               
-
                 <Select
                   variant="filled"
                   label="Ingrediente"
@@ -326,9 +316,7 @@ const deleteIngredient = (indice: number) => {
                   value={valueInsumos.insumo.id.toString()}
                   onChange={handleChangeInsumosValues}
                 >
-                  <MenuItem >
-                    Insumo
-                  </MenuItem>
+                  <MenuItem>Insumo</MenuItem>
                   {insumos?.map((el) => (
                     <MenuItem key={el.id} value={el.id}>
                       {el.denominacion}

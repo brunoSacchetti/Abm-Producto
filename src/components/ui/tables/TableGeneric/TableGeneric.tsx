@@ -114,7 +114,7 @@ export const TableGeneric = <T extends { id: any }>({
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ marginRight: 20 }}
         />
-
+        <label>Filtrar por categoria</label>
         <Select
           label="Categorias"
           value={selectedCategoriaId ?? ""}

@@ -17,7 +17,7 @@ import { categorias } from "../../../../types/ICategoria";
 import { CategoriaComidaService } from "../../../../services/CategoriaComidaService";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
-import { InsumoServices } from "../../../../services/InsumosServices";
+import { InsumoServices } from "../../../../services/InsumoServices";
 import IProducto from "../../../../types/IProductoManufacturado";
 import { handleSuccess } from "../../../../helpers/alerts";
 import IProductoDetalle from "../../../../types/IProductoDetalle";

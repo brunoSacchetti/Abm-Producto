@@ -1,4 +1,3 @@
-//#region IMPORTS
 import { ChangeEvent, FC, useEffect, useState } from "react";
 import {
   Button,
@@ -9,7 +8,6 @@ import {
   TextField,
 } from "@mui/material";
 import styles from "./MasterDetailModal.module.css";
-import { TableIngredients } from "../../tables/TableIngredients/TableIngredients";
 import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
 import { ProductoManufacturadoService } from "../../../../services/ProductoManufacturadoService";
 import { InsumoServices } from "../../../../services/InsumoServices";
@@ -19,13 +17,12 @@ import { ProductoDetalleService } from "../../../../services/ProductoDetalleServ
 import { removeElementActive } from "../../../../redux/slices/TablaReducer";
 import { UnidadMedidaService } from "../../../../services/UnidadMedidaService";
 import IUnidadMedida from "../../../../types/IUnidadMedida";
-import { CButton, CContainer, CForm, CFormInput, CNavbar } from "@coreui/react";
-import { IInsumo } from "../../../../types/IInsumo";
 import { ICategoria } from "../../../../types/ICategoria";
 import { CategoriaService } from "../../../../services/CategoriaService";
+import { InsumosModal } from "./InsumosModal"; // Importamos el modal secundario
+import { TablePruebaModal2 } from "../../tables/TablePruebaModal2/TablePruebaModal2";
 
 const API_URL = import.meta.env.VITE_API_URL;
-//#endregion
 
 const initialValues: ProductoPost = {
   id: 0,
@@ -44,23 +41,21 @@ interface IMasterDetailModal {
   handleClose: () => void;
 }
 
-export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
+export const PruebaModal2: FC<IMasterDetailModal> = ({
   handleClose,
   open,
   getData,
 }) => {
-  //#region States
   const [itemValue, setItemValue] = useState<ProductoPost>(initialValues);
   const [selectedUnidadMedidaId, setSelectedUnidadMedidaId] =
     useState<number>(1);
-  const [cantidadInsumo, setCantidadInsumo] = useState<number>(0);
-  const [unidadMedidaInsumo, setUnidadMedidaInsumo] = useState<string>("N/A");
-  const [dataIngredients, setDataIngredients] = useState<any[]>([]);
   const [selectedDetalle, setSelectedDetalle] = useState<any[]>([]);
   const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
   const [categoria, setCategoria] = useState<ICategoria[]>([]);
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<number>(1);
-  /* TODOS LOS SERVICES */
+  const [openInsumosModal, setOpenInsumosModal] = useState<boolean>(false); // Estado para controlar el modal de insumos
+  const [dataIngredients, setDataIngredients] = useState<any[]>([]); // Datos de insumos
+
   const unidadMedidaService = new UnidadMedidaService(
     `${API_URL}/UnidadMedida`
   );
@@ -73,11 +68,9 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
   const insumosServices = new InsumoServices(`${API_URL}/ArticuloInsumo`);
   const categoriaService = new CategoriaService(`${API_URL}/categoria`);
 
-  //#endregion
   const dispatch = useAppDispatch();
   const data = useAppSelector((state) => state.tablaReducer.elementActive);
 
-  //#region GetAllUnidadMedida-Insumos
   const getUnidadMedida = async () => {
     try {
       const data = await unidadMedidaService.getAll();
@@ -87,7 +80,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
-  // #region Obtener Categorias
   const getCategorias = async () => {
     try {
       const data = await categoriaService.getAll();
@@ -96,17 +88,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       console.error("Error al obtener las categorías:", error);
     }
   };
-  //#endregion
 
   const getInsumos = async () => {
     try {
-      const data: IInsumo[] = await insumosServices.getAll();
-
-      // Filtrar los insumos que no son para elaborar
-      const insumosNoElaborar: IInsumo[] = data.filter(
-        (insumo) => insumo.esParaElaborar
-      );
-
+      const data = await insumosServices.getAll();
+      const insumosNoElaborar = data.filter((insumo) => insumo.esParaElaborar);
       setDataIngredients(
         insumosNoElaborar.map((insumo) => ({
           cantidad: 0,
@@ -118,9 +104,6 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     }
   };
 
-  //#endregion
-
-  //#region UseEffect SetData And GetData[] methods
   useEffect(() => {
     if (data) {
       const productoData: ProductoPost = data as ProductoPost;
@@ -135,7 +118,7 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
           productoData.idsArticuloManufacturadoDetalles,
         idUnidadMedida: productoData.idUnidadMedida,
       });
-      setSelectedUnidadMedidaId(productoData.idUnidadMedida); //PARA SETEAR EL ID DE UNIDAD DE
+      setSelectedUnidadMedidaId(productoData.idUnidadMedida);
     } else {
       resetValues();
     }
@@ -148,16 +131,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       getCategorias();
     }
   }, [open]);
-  //#endregion
 
-  //#region ResetValues
   const resetValues = () => {
     setItemValue(initialValues);
-    setCantidadInsumo(0);
-    setUnidadMedidaInsumo("N/A");
-    setDataIngredients([]);
+    setSelectedDetalle([]);
   };
-  //#endregion
 
   const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
     const { value, name } = e.target;
@@ -167,49 +145,40 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
     });
   };
 
-  //#region CONFIRMACION-ENVIO
   const handleConfirmModal = async () => {
     try {
       let productoId: number;
-      let detallesIds: number[] = []; // Array para almacenar los IDs de los detalles
+      let detallesIds: number[] = [];
 
-      // Verificar si el producto ya existe o es nuevo
       if (data) {
-        // Si el producto ya existe, actualizamos sus detalles
         await productoManufacturadoService.put(itemValue.id, itemValue);
         productoId = itemValue.id;
       } else {
-        // Si el producto es nuevo, lo creamos y obtenemos su ID
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
 
-      console.log(selectedCategoriaId, productoId);
-
-      // Asignar la categoria al producto
       await categoriaService.addArticuloManufacturado(
         selectedCategoriaId,
         productoId
       );
 
-      // Guardar los detalles de los insumos y obtener sus IDs de la base de datos
       await Promise.all(
         selectedDetalle.map(async (detalle) => {
           const newDetalle = {
             id: 0,
             cantidad: detalle.cantidad,
-            idArticuloInsumo: detalle.id, // Usar el ID del insumo desde selectedDetalle
-            idArticuloManufacturado: productoId, // Asignar el ID del producto
+            idArticuloInsumo: detalle.id,
+            idArticuloManufacturado: productoId,
           };
           const createdDetalle = await productoDetalleService.post(newDetalle);
-          detallesIds.push(createdDetalle.id); // Almacenar el ID del detalle
+          detallesIds.push(createdDetalle.id);
         })
       );
 
-      // Asignar los IDs de los detalles al producto principal
       await productoManufacturadoService.put(productoId, {
         ...itemValue,
-        idsArticuloManufacturadoDetalles: detallesIds, // Usar los IDs de los detalles
+        idsArticuloManufacturadoDetalles: detallesIds,
       });
 
       handleSuccess("Elemento guardado correctamente");
@@ -223,20 +192,16 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       console.error("Error al confirmar modal:", error);
     }
   };
-  //#endregion
 
   const handleTableIngredientSelect = (selectedData: any) => {
-    // Filtrar datos necesarios de cada objeto en el array
     const filteredData = selectedData.map((item: any) => ({
       id: item.id,
       cantidad: item.cantidad,
       denominacion: item.denominacion,
     }));
-    // Setear el estado con los datos filtrados
     setSelectedDetalle(filteredData);
   };
 
-  //#region HandleChangeEventIngredientesUnidadMedida
   const handleChangeUnidadMedidaValues = async (
     e: SelectChangeEvent<number>
   ) => {
@@ -247,19 +212,34 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
       idUnidadMedida: unidadMedidaId,
     });
   };
-  //#endregion HandleChangeEvent
 
-  // #region handle Categoria ID
   const handleChangeCategoriaValues = async (e: SelectChangeEvent<number>) => {
     const categoriaId = e.target.value as number;
-    console.log(categoriaId);
     setSelectedCategoriaId(categoriaId);
-    /* setItemValue({
-      ...itemValue,
-      idUnidadMedida: unidadMedidaId,
-    }); */
   };
-  // #endregion HandleChangeEvent
+
+  const handleOpenInsumosModal = () => {
+    setOpenInsumosModal(true);
+  };
+
+  const handleCloseInsumosModal = () => {
+    setOpenInsumosModal(false);
+  };
+
+  const handleAddInsumos = (selectedInsumos: any[]) => {
+    setSelectedDetalle([...selectedDetalle, ...selectedInsumos]);
+    handleCloseInsumosModal();
+  };
+  
+  const handleRemoveInsumo = (id: number) => {
+    const updatedDetalle = selectedDetalle.filter(
+      (detalle) => detalle.id !== id
+    );
+    setSelectedDetalle(updatedDetalle);
+  };
+
+  console.log(selectedDetalle);
+  
 
   return (
     <div>
@@ -367,28 +347,54 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
               </div>
               <div style={{ textAlign: "center" }}>
                 <h1>Insumos</h1>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleOpenInsumosModal}
+                >
+                  Agregar Insumos
+                </Button>
               </div>
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "space-around",
-                  marginBottom: "2vh",
-                }}
-              ></div>
             </div>
-
+            
             <div className={styles.ingredientesTableContainer}>
-              {dataIngredients.length > 0 ? (
+              {selectedDetalle.length > 0 ? (
                 <div className={styles.ingredientesTableContainerItem}>
-                  <TableIngredients
-                    dataIngredients={dataIngredients.map((detalle, index) => ({
+                  <TablePruebaModal2
+                    dataIngredients={selectedDetalle.map((detalle, index) => ({
                       id: index + 1,
                       ...detalle.insumo,
                       cantidad: detalle.cantidad,
                     }))}
-                    onSelect={handleTableIngredientSelect}
+                    //onSelect={handleTableIngredientSelect}
                   />
+                </div>
+              ) : (
+                <div>No hay insumos agregados</div>
+              )}
+            </div>
+
+
+            <div className={styles.ingredientesTableContainer}>
+              {selectedDetalle.length > 0 ? (
+                <div className={styles.ingredientesTableContainerItem}>
+                  {selectedDetalle.map((detalle) => (
+                    <div key={detalle.id} className={styles.ingredientItem}>
+                      <span className={styles.ingredientName}>
+                        {detalle.denominacion}
+                      </span>
+                      <span className={styles.ingredientQuantity}>
+                        {detalle.cantidad}
+                      </span>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => handleRemoveInsumo(detalle.id)}
+                      >
+                        Quitar
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div>No hay insumos agregados</div>
@@ -415,6 +421,11 @@ export const PruebaManufacturadoModal: FC<IMasterDetailModal> = ({
           </div>
         </div>
       </Modal>
+      <InsumosModal
+        open={openInsumosModal}
+        handleClose={handleCloseInsumosModal}
+        handleAddInsumos={handleAddInsumos} // Cambiar 'onConfirm' a 'handleAddInsumos'
+      />
     </div>
   );
 };
