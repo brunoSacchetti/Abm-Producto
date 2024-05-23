@@ -21,6 +21,7 @@ import { ICategoria } from "../../../../types/ICategoria";
 import { CategoriaService } from "../../../../services/CategoriaService";
 import { InsumosModal } from "./InsumosModal"; // Importamos el modal secundario
 import { TablePruebaModal2 } from "../../tables/TablePruebaModal2/TablePruebaModal2";
+import { IInsumo } from "../../../../types/IInsumo";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -92,7 +93,10 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
   const getInsumos = async () => {
     try {
       const data = await insumosServices.getAll();
-      const insumosNoElaborar = data.filter((insumo) => insumo.esParaElaborar);
+      const insumosNoElaborar: IInsumo[] = data.filter(
+        (insumo) => insumo.esParaElaborar
+      );
+
       setDataIngredients(
         insumosNoElaborar.map((insumo) => ({
           cantidad: 0,
@@ -114,16 +118,19 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
         tiempoEstimadoMinutos: productoData.tiempoEstimadoMinutos,
         descripcion: productoData.descripcion,
         preparacion: productoData.preparacion,
-        idsArticuloManufacturadoDetalles:
-          productoData.idsArticuloManufacturadoDetalles,
+        idsArticuloManufacturadoDetalles: productoData.idsArticuloManufacturadoDetalles,
         idUnidadMedida: productoData.idUnidadMedida,
       });
       setSelectedUnidadMedidaId(productoData.idUnidadMedida);
+
     } else {
       resetValues();
     }
   }, [data]);
 
+
+
+  
   useEffect(() => {
     if (open) {
       getInsumos();
@@ -135,6 +142,7 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
   const resetValues = () => {
     setItemValue(initialValues);
     setSelectedDetalle([]);
+    setDataIngredients([]);
   };
 
   const handlePropsElementsInputs = (e: ChangeEvent<HTMLInputElement>) => {
@@ -144,27 +152,23 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
       [name]: value,
     });
   };
-
+  console.log(itemValue);
+  
   const handleConfirmModal = async () => {
     try {
       let productoId: number;
       let detallesIds: number[] = [];
-
+  
       if (data) {
-        console.log(itemValue);
-        
         await productoManufacturadoService.put(itemValue.id, itemValue);
         productoId = itemValue.id;
       } else {
         const newProducto = await productoManufacturadoService.post(itemValue);
         productoId = newProducto.id;
       }
-
-      await categoriaService.addArticuloManufacturado(
-        selectedCategoriaId,
-        productoId
-      );
-
+  
+      await categoriaService.addArticuloManufacturado(selectedCategoriaId, productoId);
+  
       await Promise.all(
         selectedDetalle.map(async (detalle) => {
           const newDetalle = {
@@ -177,12 +181,12 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
           detallesIds.push(createdDetalle.id);
         })
       );
-
+  
       await productoManufacturadoService.put(productoId, {
         ...itemValue,
         idsArticuloManufacturadoDetalles: detallesIds,
       });
-
+  
       handleSuccess("Elemento guardado correctamente");
       handleClose();
       resetValues();
