@@ -1,35 +1,19 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { MenuItem, Select } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
 import { IInsumo } from "../../../../types/IInsumo";
 import { CategoriaService } from "../../../../services/CategoriaService";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-const columns = [
-  { label: "Id", key: "id" },
-  {
-    label: "Ingrediente",
-    key: "denominacion",
-  },
-  {
-    label: "Unidad de medida",
-    key: "unidadMedida",
-    render: (element: IInsumo) =>
-      element?.unidadMedida?.denominacion ?? "N/A",
-  },
-  { label: "Cantidad", key: "cantidad" },
-  { label: "Seleccionar", key: "seleccionar" },
-];
 
 interface ITableIngredients {
   dataIngredients: IInsumo[];
@@ -43,7 +27,9 @@ export const TableModal2 = ({
   const [rows, setRows] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number>(-1);
   const [categoria, setCategoria] = useState<any[]>([]);
+  const [selectedCategoryInsumos, setSelectedCategoryInsumos] = useState<any[]>([]);
 
   useEffect(() => {
     const updatedRows = dataIngredients.map((ingredient, index) => ({
@@ -62,7 +48,7 @@ export const TableModal2 = ({
   }, []);
 
   const handleCheckboxChange = (
-    event: ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>,
     rowData: any
   ) => {
     const checked = event.target.checked;
@@ -79,7 +65,7 @@ export const TableModal2 = ({
   };
 
   const handleCantidadChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     rowData: any
   ) => {
     const newCantidad = parseFloat(event.target.value);
@@ -101,12 +87,28 @@ export const TableModal2 = ({
     onSelect(updatedSelectedRows);
   };
 
+  const onSelectCategory = async (categoryId: number) => {
+    setSelectedCategoriaId(categoryId);
+    if (categoryId === -1) {
+      setRows(dataIngredients);
+    } else {
+      const categoriaService = new CategoriaService(API_URL + "/categoria");
+      const selectedCategory = await categoriaService.getById(categoryId);
+      setSelectedCategoryInsumos(selectedCategory?.insumos);
+    }
+  };
+  
+
   useEffect(() => {
-    const results = dataIngredients.filter((ingredient) =>
+    let results = selectedCategoryInsumos;
+
+    // Filtrar por término de búsqueda
+    results = results.filter((ingredient) =>
       ingredient.denominacion.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
     setRows(results);
-  }, [dataIngredients, searchTerm]);
+  }, [searchTerm, selectedCategoryInsumos]);
 
   return (
     <div>
@@ -118,9 +120,12 @@ export const TableModal2 = ({
       />
       <Select
         style={{ marginLeft: 40 }}
-        label="Categorias"
+        label="Categorías"
         variant="filled"
+        value={selectedCategoriaId}
+        onChange={(e) => onSelectCategory(e.target.value as number)}
       >
+        <MenuItem value={-1}>Todas las Categorias</MenuItem>
         {categoria.map((cat) => (
           <MenuItem key={cat.id} value={cat.id}>
             {cat.denominacion}
@@ -134,39 +139,35 @@ export const TableModal2 = ({
         <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
           <TableHead>
             <TableRow>
-              {columns.map((column, i) => (
-                <TableCell key={i} align="center">
-                  {column.label}
-                </TableCell>
-              ))}
+              <TableCell align="center">Id</TableCell>
+              <TableCell align="center">Ingrediente</TableCell>
+              <TableCell align="center">Unidad de medida</TableCell>
+              <TableCell align="center">Cantidad</TableCell>
+              <TableCell align="center">Seleccionar</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row, index) => (
               <TableRow role="checkbox" tabIndex={-1} key={index}>
-                {columns.map((column, i) => (
-                  <TableCell key={i} align="center">
-                    {column.key === "seleccionar" ? (
-                      <Checkbox
-                        checked={selectedRows.some(
-                          (selectedRow) => selectedRow.id === row.id
-                        )}
-                        onChange={(event) => handleCheckboxChange(event, row)}
-                      />
-                    ) : column.key === "cantidad" ? (
-                      <TextField
-                        type="number"
-                        value={row.cantidad}
-                        onChange={(event) => handleCantidadChange(event, row)}
-                        variant="filled"
-                      />
-                    ) : column.render ? (
-                      column.render(row)
-                    ) : (
-                      row[column.key]
+                <TableCell align="center">{row.id}</TableCell>
+                <TableCell align="center">{row.denominacion}</TableCell>
+                <TableCell align="center">{row.unidadMedida?.denominacion ?? "N/A"}</TableCell>
+                <TableCell align="center">
+                  <TextField
+                    type="number"
+                    value={row.cantidad}
+                    onChange={(event) => handleCantidadChange(event, row)}
+                    variant="filled"
+                  />
+                </TableCell>
+                <TableCell align="center">
+                  <Checkbox
+                    checked={selectedRows.some(
+                      (selectedRow) => selectedRow.id === row.id
                     )}
-                  </TableCell>
-                ))}
+                    onChange={(event) => handleCheckboxChange(event, row)}
+                  />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
