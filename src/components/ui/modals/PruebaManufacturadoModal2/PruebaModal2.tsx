@@ -54,8 +54,8 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
   const [unidadMedida, setUnidadMedida] = useState<IUnidadMedida[]>([]);
   const [categoria, setCategoria] = useState<ICategoria[]>([]);
   const [selectedCategoriaId, setSelectedCategoriaId] = useState<number>(1);
-  const [openInsumosModal, setOpenInsumosModal] = useState<boolean>(false); // Estado para controlar el modal de insumos
-  const [dataIngredients, setDataIngredients] = useState<any[]>([]); // Datos de insumos
+  const [openInsumosModal, setOpenInsumosModal] = useState<boolean>(false);
+  const [dataIngredients, setDataIngredients] = useState<any[]>([]);
 
   const unidadMedidaService = new UnidadMedidaService(
     `${API_URL}/UnidadMedida`
@@ -110,19 +110,17 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
 
   const getProductoDetalles = async (productoId: number) => {
     try {
-      const detalles = await productoDetalleService.getById(productoId);
-      
-      // Ensure detalles is an array
-      const detallesArray = Array.isArray(detalles) ? detalles : [detalles];
-  
-      const formattedDetalles = detallesArray.map((detalle: any) => ({
+      const detallesResponse = await fetch(`http://localhost:8080/ArticuloManufacturado/allDetalles/${productoId}`);
+      const detallesData = await detallesResponse.json();
+      // Ahora debes formatear los detalles obtenidos según la estructura esperada en selectedDetalle
+      const formattedDetalles = detallesData.map((detalle: any) => ({
         id: detalle.idArticuloInsumo,
         cantidad: detalle.cantidad,
         denominacion: detalle.articuloInsumo.denominacion,
       }));
       setSelectedDetalle(formattedDetalles);
     } catch (error) {
-      console.error("Error al obtener los detalles del producto:", error);
+      console.error("Error al obtener los detalles de los insumos:", error);
     }
   };
 
@@ -140,9 +138,9 @@ export const PruebaModal2: FC<IMasterDetailModal> = ({
         idUnidadMedida: productoData.idUnidadMedida,
       });
       setSelectedUnidadMedidaId(productoData.idUnidadMedida);
-
+  
       // Fetch and set the insumos related to the product
-      getProductoDetalles(productoData.id);
+      getProductoDetalles(productoData.id); // Esta función se encargará de realizar la llamada a la API y actualizar los detalles de los insumos
     } else {
       resetValues();
     }
